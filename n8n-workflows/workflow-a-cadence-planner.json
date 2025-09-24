@@ -1,0 +1,380 @@
+{
+  "name": "PeakNorth Blog - Cadence Planner (WF-A)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 2
+            }
+          ]
+        },
+        "timezone": "America/Toronto"
+      },
+      "id": "cron-trigger",
+      "name": "Every 2 Days at 10:00",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/v1/ideas/pick",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "pick-idea",
+      "name": "Pick Blog Idea",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "no-content-check",
+              "leftValue": "={{$node['Pick Blog Idea'].json}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-idea-available",
+      "name": "Check Idea Available",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"BRIEF\",\n  \"brief\": {\n    \"topic\": \"{{$node['Pick Blog Idea'].json.topic}}\",\n    \"persona\": \"{{$node['Pick Blog Idea'].json.persona}}\",\n    \"goal\": \"{{$node['Pick Blog Idea'].json.goal}}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "create-post",
+      "name": "Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a blog outline creator. Create a detailed outline for a blog post based on the given brief. Return only valid JSON with this structure: {\\\"title\\\": \\\"...\\\", \\\"introduction\\\": \\\"...\\\", \\\"sections\\\": [{\\\"heading\\\": \\\"...\\\", \\\"subPoints\\\": [\\\"...\\\"]}], \\\"conclusion\\\": \\\"...\\\", \\\"callToAction\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Topic: {{$node['Pick Blog Idea'].json.topic}}\\nPersona: {{$node['Pick Blog Idea'].json.persona}}\\nGoal: {{$node['Pick Blog Idea'].json.goal}}\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "id": "generate-outline",
+      "name": "Generate Outline (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-api-key",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse OpenAI response and extract outline\nconst openaiResponse = $input.all()[0].json;\nconst outlineText = openaiResponse.choices[0].message.content;\n\ntry {\n  const outline = JSON.parse(outlineText);\n  return [{ json: { outline } }];\n} catch (error) {\n  console.error('Failed to parse outline JSON:', error);\n  // Fallback outline\n  return [{\n    json: {\n      outline: {\n        title: $node['Pick Blog Idea'].json.topic,\n        introduction: \"Introduction to be written\",\n        sections: [\n          {\n            heading: \"Main Section\",\n            subPoints: [\"Point 1\", \"Point 2\", \"Point 3\"]\n          }\n        ],\n        conclusion: \"Conclusion to be written\",\n        callToAction: \"Call to action to be written\"\n      }\n    }\n  }];\n}"
+      },
+      "id": "parse-outline",
+      "name": "Parse Outline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/v1/posts/{{$node['Create Post'].json.data.id}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"outline\": {{$node['Parse Outline'].json.outline}}\n}",
+        "options": {
+          "httpMethod": "PUT"
+        }
+      },
+      "id": "save-outline",
+      "name": "Save Outline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert blog writer. Write a complete, engaging blog post in MDX format based on the outline provided. Include proper headings, engaging content, code examples where relevant, and maintain a professional yet approachable tone. The post should be 1500-2500 words.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a blog post based on this outline:\\n\\nTitle: {{$node['Parse Outline'].json.outline.title}}\\nIntroduction: {{$node['Parse Outline'].json.outline.introduction}}\\nSections: {{JSON.stringify($node['Parse Outline'].json.outline.sections)}}\\nConclusion: {{$node['Parse Outline'].json.outline.conclusion}}\\nCall to Action: {{$node['Parse Outline'].json.outline.callToAction}}\\n\\nTarget Persona: {{$node['Pick Blog Idea'].json.persona}}\\nGoal: {{$node['Pick Blog Idea'].json.goal}}\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "id": "generate-draft",
+      "name": "Generate Draft (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1780, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-api-key",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract draft content and calculate word count\nconst openaiResponse = $input.all()[0].json;\nconst draftContent = openaiResponse.choices[0].message.content;\n\n// Simple word count\nconst wordCount = draftContent.split(/\\s+/).length;\nconst estimatedReadTime = Math.ceil(wordCount / 200); // 200 words per minute\n\nreturn [{\n  json: {\n    draft_mdx: draftContent,\n    wordCount: wordCount,\n    estimatedReadTime: estimatedReadTime\n  }\n}];"
+      },
+      "id": "process-draft",
+      "name": "Process Draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/v1/posts/{{$node['Create Post'].json.data.id}}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"NEEDS_REVIEW\",\n  \"patch\": {\n    \"draft_mdx\": {{JSON.stringify($node['Process Draft'].json.draft_mdx)}},\n    \"wordCount\": {{$node['Process Draft'].json.wordCount}},\n    \"estimatedReadTime\": {{$node['Process Draft'].json.estimatedReadTime}}\n  }\n}",
+        "options": {}
+      },
+      "id": "save-draft",
+      "name": "Save Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2220, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@peaknorth.com",
+        "toEmail": "admin@peaknorth.com",
+        "subject": "New Blog Post Ready for Review",
+        "emailType": "html",
+        "message": "=<h2>New Blog Post Created</h2>\n<p>A new blog post has been created and is ready for your review:</p>\n<ul>\n  <li><strong>Title:</strong> {{$node['Parse Outline'].json.outline.title}}</li>\n  <li><strong>Scheduled:</strong> {{new Date($node['Create Post'].json.data.scheduledAt).toLocaleString('en-US', {timeZone: 'America/Toronto'})}}</li>\n  <li><strong>Word Count:</strong> {{$node['Process Draft'].json.wordCount}}</li>\n  <li><strong>Estimated Read Time:</strong> {{$node['Process Draft'].json.estimatedReadTime}} minutes</li>\n</ul>\n<p><a href=\"{{$env.FRONTEND_URL}}/posts/{{$node['Create Post'].json.data.id}}\" style=\"background-color: #3B82F6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Review Post →</a></p>",
+        "options": {}
+      },
+      "id": "send-notification",
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2440, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@peaknorth.com",
+        "toEmail": "admin@peaknorth.com",
+        "subject": "No Blog Ideas Available - Add More Ideas",
+        "emailType": "text",
+        "message": "No unused blog ideas are available in the system. Please add more ideas to continue the automated blog creation process.\n\nAdd ideas at: {{$env.FRONTEND_URL}}/ideas",
+        "options": {}
+      },
+      "id": "send-reminder",
+      "name": "Send Reminder to Add Ideas",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [900, 400],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 2 Days at 10:00": {
+      "main": [
+        [
+          {
+            "node": "Pick Blog Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Blog Idea": {
+      "main": [
+        [
+          {
+            "node": "Check Idea Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idea Available": {
+      "main": [
+        [
+          {
+            "node": "Create Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Reminder to Add Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Post": {
+      "main": [
+        [
+          {
+            "node": "Generate Outline (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Outline (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Parse Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Outline": {
+      "main": [
+        [
+          {
+            "node": "Save Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Outline": {
+      "main": [
+        [
+          {
+            "node": "Generate Draft (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Draft (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Process Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Draft": {
+      "main": [
+        [
+          {
+            "node": "Save Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Draft": {
+      "main": [
+        [
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "blog-automation",
+      "name": "blog-automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

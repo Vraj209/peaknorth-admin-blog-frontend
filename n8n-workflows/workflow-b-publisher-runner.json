@@ -1,0 +1,403 @@
+{
+  "name": "PeakNorth Blog - Publisher Runner (WF-B)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        },
+        "timezone": "America/Toronto"
+      },
+      "id": "cron-trigger",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERVER_URL}}/api/publish/ready",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "get-ready-posts",
+      "name": "Get Ready Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-posts-check",
+              "leftValue": "={{$node['Get Ready Posts'].json.length}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-posts-available",
+      "name": "Check Posts Available",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {}
+      },
+      "id": "split-in-batches",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Generate SEO metadata for a blog post. Return only valid JSON with this structure: {\\\"metaTitle\\\": \\\"...\\\", \\\"metaDescription\\\": \\\"...\\\", \\\"focusKeyword\\\": \\\"...\\\", \\\"keywords\\\": [...], \\\"slug\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Title: {{$json.outline.title}}\\nContent: {{$json.draft_mdx.substring(0, 500)}}...\"\n    }\n  ],\n  \"temperature\": 0.3\n}",
+        "options": {}
+      },
+      "id": "generate-seo",
+      "name": "Generate SEO (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-api-key",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse SEO response\nconst openaiResponse = $input.all()[0].json;\nconst seoText = openaiResponse.choices[0].message.content;\n\ntry {\n  const seo = JSON.parse(seoText);\n  return [{ json: { seo } }];\n} catch (error) {\n  console.error('Failed to parse SEO JSON:', error);\n  // Fallback SEO\n  const title = $node['Split In Batches'].json.outline?.title || 'Blog Post';\n  return [{\n    json: {\n      seo: {\n        metaTitle: title,\n        metaDescription: `Read our latest blog post: ${title}`,\n        focusKeyword: title.toLowerCase().split(' ')[0],\n        keywords: [title.toLowerCase()],\n        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')\n      }\n    }\n  }];\n}"
+      },
+      "id": "parse-seo",
+      "name": "Parse SEO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERVER_URL}}/api/posts/{{$node['Split In Batches'].json.id}}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"SCHEDULED\",\n  \"patch\": {\n    \"seo\": {{$node['Parse SEO'].json.seo}}\n  }\n}",
+        "options": {}
+      },
+      "id": "save-seo",
+      "name": "Save SEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convert MDX to HTML (simplified)\n// In production, you'd use a proper MDX compiler\nconst mdxContent = $node['Split In Batches'].json.draft_mdx;\nconst seo = $node['Parse SEO'].json.seo;\n\n// Simple MDX to HTML conversion (you should use a proper library)\nlet htmlContent = mdxContent\n  .replace(/^# (.*$)/gm, '<h1>$1</h1>')\n  .replace(/^## (.*$)/gm, '<h2>$1</h2>')\n  .replace(/^### (.*$)/gm, '<h3>$1</h3>')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  .replace(/\\*(.*?)\\*/g, '<em>$1</em>')\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/^(.*)$/gm, '<p>$1</p>');\n\n// Generate full HTML page\nconst fullHtml = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>${seo.metaTitle}</title>\n  <meta name=\"description\" content=\"${seo.metaDescription}\">\n  <meta name=\"keywords\" content=\"${seo.keywords.join(', ')}\">\n  <link rel=\"canonical\" href=\"https://peaknorth.com/blog/${seo.slug}\">\n</head>\n<body>\n  <article>\n    ${htmlContent}\n  </article>\n</body>\n</html>`;\n\nconst publicUrl = `https://peaknorth.com/blog/${seo.slug}`;\n\nreturn [{\n  json: {\n    htmlContent: fullHtml,\n    publicUrl: publicUrl,\n    slug: seo.slug\n  }\n}];"
+      },
+      "id": "render-html",
+      "name": "Render HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERVER_URL}}/api/posts/{{$node['Split In Batches'].json.id}}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"htmlContent\": {{JSON.stringify($node['Render HTML'].json.htmlContent)}},\n  \"publicUrl\": \"{{$node['Render HTML'].json.publicUrl}}\",\n  \"slug\": \"{{$node['Render HTML'].json.slug}}\"\n}",
+        "options": {}
+      },
+      "id": "publish-post",
+      "name": "Publish Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@peaknorth.com",
+        "toEmail": "admin@peaknorth.com",
+        "subject": "Blog Post Published Successfully",
+        "emailType": "html",
+        "message": "=<h2>Blog Post Published</h2>\n<p>Your blog post has been successfully published:</p>\n<ul>\n  <li><strong>Title:</strong> {{$node['Split In Batches'].json.outline.title}}</li>\n  <li><strong>URL:</strong> <a href=\"{{$node['Render HTML'].json.publicUrl}}\">{{$node['Render HTML'].json.publicUrl}}</a></li>\n  <li><strong>Published:</strong> {{new Date().toLocaleString('en-US', {timeZone: 'America/Toronto'})}}</li>\n</ul>\n<p><a href=\"{{$node['Render HTML'].json.publicUrl}}\" style=\"background-color: #10B981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">View Published Post →</a></p>",
+        "options": {}
+      },
+      "id": "send-success-notification",
+      "name": "Send Success Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2220, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERVER_URL}}/api/publish/stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "get-stats",
+      "name": "Get Publishing Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n8n-api-key",
+          "name": "N8N API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-pending-posts",
+              "leftValue": "={{$node['Get Publishing Stats'].json.readyToPublish}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-pending-posts",
+      "name": "Check Pending Posts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@peaknorth.com",
+        "toEmail": "admin@peaknorth.com",
+        "subject": "Blog Posts Pending Approval",
+        "emailType": "html",
+        "message": "=<h2>Posts Awaiting Approval</h2>\n<p>You have {{$node['Get Publishing Stats'].json.readyToPublish}} blog posts that are ready to publish but haven't been approved yet.</p>\n<p>Please review and approve them in the admin dashboard:</p>\n<p><a href=\"{{$env.FRONTEND_URL}}/posts?status=NEEDS_REVIEW\" style=\"background-color: #F59E0B; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Review Posts →</a></p>\n<hr>\n<p><strong>Publishing Stats:</strong></p>\n<ul>\n  <li>Total Posts: {{$node['Get Publishing Stats'].json.total}}</li>\n  <li>Published: {{$node['Get Publishing Stats'].json.published}}</li>\n  <li>Scheduled: {{$node['Get Publishing Stats'].json.scheduled}}</li>\n  <li>Ready to Publish: {{$node['Get Publishing Stats'].json.readyToPublish}}</li>\n</ul>",
+        "options": {}
+      },
+      "id": "send-pending-reminder",
+      "name": "Send Pending Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1340, 400],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get Ready Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ready Posts": {
+      "main": [
+        [
+          {
+            "node": "Check Posts Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Posts Available": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Publishing Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Generate SEO (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate SEO (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Parse SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse SEO": {
+      "main": [
+        [
+          {
+            "node": "Save SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save SEO": {
+      "main": [
+        [
+          {
+            "node": "Render HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render HTML": {
+      "main": [
+        [
+          {
+            "node": "Publish Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Post": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Publishing Stats": {
+      "main": [
+        [
+          {
+            "node": "Check Pending Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Pending Posts": {
+      "main": [
+        [
+          {
+            "node": "Send Pending Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "blog-automation",
+      "name": "blog-automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

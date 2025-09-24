@@ -1,0 +1,49 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for PeakNorth Blog
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Blog images - allow authenticated users to read/write
+    match /blog-images/{allPaths=**} {
+      allow read: if true; // Public read access for blog images
+      allow write: if request.auth != null 
+        && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+        && request.resource.contentType.matches('image/.*'); // Only images
+    }
+    
+    // Featured images - same rules as blog images
+    match /featured-images/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null 
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Thumbnails and processed images
+    match /thumbnails/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // User profile images (if needed in the future)
+    match /profile-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024 // Max 2MB for profiles
+        && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Temporary uploads (auto-delete after 24 hours)
+    match /temp/{allPaths=**} {
+      allow read, write: if request.auth != null 
+        && request.resource.size < 10 * 1024 * 1024; // Max 10MB for temp
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

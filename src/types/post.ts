@@ -1,0 +1,97 @@
+export type PostStatus = 
+  | 'BRIEF' 
+  | 'OUTLINE' 
+  | 'DRAFT' 
+  | 'NEEDS_REVIEW' 
+  | 'APPROVED' 
+  | 'SCHEDULED' 
+  | 'PUBLISHED';
+
+export interface PostBrief {
+  topic: string;
+  persona: string;
+  goal: string;
+  targetAudience?: string;
+  keyPoints?: string[];
+}
+
+export interface PostOutline {
+  title: string;
+  introduction: string;
+  sections: {
+    heading: string;
+    subPoints: string[];
+  }[];
+  conclusion: string;
+  callToAction?: string;
+}
+
+export interface PostSEO {
+  metaTitle: string;
+  metaDescription: string;
+  focusKeyword: string;
+  keywords: string[];
+  slug: string;
+}
+
+export interface BlogPost {
+  id: string;
+  status: PostStatus;
+  scheduledAt: number | null; // epoch ms in America/Toronto timezone intent
+  publishedAt: number | null;
+  createdAt: number;
+  updatedAt: number;
+  
+  // Content stages
+  brief: PostBrief | null;
+  outline: PostOutline | null;
+  draft_mdx: string | null;
+  seo: PostSEO | null;
+  
+  // Images
+  featuredImage?: BlogImage;
+  images?: BlogImage[];
+  
+  // Metadata
+  wordCount?: number;
+  estimatedReadTime?: number;
+  tags?: string[];
+  category?: string;
+  
+  // Publishing
+  publicUrl?: string;
+  
+  // Error tracking
+  errorMessage?: string;
+}
+
+export interface BlogImage {
+  url: string;
+  storagePath: string;
+  filename: string;
+  size: number;
+  alt?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}
+
+export interface CadenceConfig {
+  intervalDays: number;
+  publishHour: number; // 0-23, local time
+  timezone: string; // e.g., "America/Toronto"
+  draftLeadHours: number; // create draft X hours before publish slot
+  reminderHours?: number; // send reminder X hours before publish if not approved
+}
+
+export interface BlogIdea {
+  id: string;
+  topic: string;
+  persona: string;
+  goal: string;
+  targetAudience?: string;
+  priority: 'low' | 'medium' | 'high';
+  used: boolean;
+  createdAt: number;
+  tags?: string[];
+}
