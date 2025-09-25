@@ -7,8 +7,7 @@ import {
   updateDoc, 
   query, 
   where, 
-  orderBy, 
-  limit,
+  orderBy
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BlogPost, PostStatus } from '../types/post';
@@ -65,7 +64,7 @@ export class HybridFirestoreService {
           wordCount: 0,
           estimatedReadTime: 0,
           tags: [],
-          publicUrl: null,
+          publicUrl: undefined,
         };
       }
     });

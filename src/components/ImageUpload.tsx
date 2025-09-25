@@ -1,11 +1,11 @@
 import React, { useState, useRef } from "react";
-import { StorageService, UploadResult } from "../lib/storage";
+import { StorageService } from "../lib/storage";
+import type { UploadResult } from "../lib/storage";
 
 interface ImageUploadProps {
   onImageUploaded: (result: UploadResult) => void;
   onError?: (error: string) => void;
   folder?: string;
-  maxFiles?: number;
   showPreview?: boolean;
   accept?: string;
   className?: string;
@@ -22,7 +22,6 @@ export function ImageUpload({
   onImageUploaded,
   onError,
   folder = "blog-images",
-  maxFiles = 1,
   showPreview = true,
   accept = "image/*",
   className = "",

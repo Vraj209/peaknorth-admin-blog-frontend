@@ -15,7 +15,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
-import { formatScheduledTime, getRelativeTimeString } from "../lib/scheduling";
+import { getRelativeTimeString } from "../lib/scheduling";
 import type { BlogPost, PostStatus } from "../types/post";
 
 const statusOptions: {

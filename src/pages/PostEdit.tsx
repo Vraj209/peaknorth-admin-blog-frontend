@@ -3,13 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
-  Clock,
   CheckCircle,
   AlertTriangle,
-  Save,
-  Eye,
   ExternalLink,
   RefreshCw,
+  FileText,
 } from "lucide-react";
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
 import { formatScheduledTime, getTimeUntilPublish } from "../lib/scheduling";

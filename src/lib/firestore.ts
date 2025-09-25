@@ -8,8 +8,7 @@ import {
   query, 
   where, 
   orderBy, 
-  limit,
-  Timestamp
+  limit
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BlogPost, PostStatus, CadenceConfig, BlogIdea } from '../types/post';
@@ -184,7 +183,7 @@ export class FirestoreService {
 
   static async updateCadenceConfig(config: CadenceConfig): Promise<void> {
     const docRef = doc(db, SETTINGS_COLLECTION, 'cadence');
-    await updateDoc(docRef, config);
+    await updateDoc(docRef, { ...config });
   }
 
   // Analytics/Stats

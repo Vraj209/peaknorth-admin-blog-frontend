@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImageUpload, MultiImageUpload } from "../components/ImageUpload";
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
-import { BlogPost, PostStatus, BlogImage } from "../types/post";
+import type { BlogPost, PostStatus, BlogImage } from "../types/post";
 import { formatScheduledTime, getTimeUntilPublish } from "../lib/scheduling";
-import { UploadResult, StorageService } from "../lib/storage";
+import { StorageService } from "../lib/storage";
+import type { UploadResult } from "../lib/storage";
 
 export function PostEditWithImages() {
   const { id } = useParams<{ id: string }>();
@@ -133,7 +134,7 @@ export function PostEditWithImages() {
       if (isFeature) {
         // Remove featured image
         await HybridFirestoreService.updatePost(post.id, {
-          featuredImage: null,
+          featuredImage: undefined,
           updatedAt: Date.now(),
         });
         setPost((prev) =>

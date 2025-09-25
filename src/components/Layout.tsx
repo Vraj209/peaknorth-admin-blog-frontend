@@ -1,11 +1,10 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
   Lightbulb,
   Settings as SettingsIcon,
-  PenTool,
 } from "lucide-react";
 import { clsx } from "clsx";
 
