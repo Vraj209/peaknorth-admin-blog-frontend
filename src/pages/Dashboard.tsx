@@ -39,7 +39,9 @@ export function Dashboard() {
       ]);
 
       setStats(statsData);
+      console.log("statsData", statsData);
       setRecentPosts(postsData);
+      console.log("postsData", postsData);
 
       // Find next scheduled post
       const scheduled = postsData.find(

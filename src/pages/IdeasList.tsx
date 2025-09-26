@@ -42,6 +42,7 @@ export function IdeasList() {
     try {
       const ideasData = await FirestoreService.getAllIdeas();
       setIdeas(ideasData);
+      console.log("ideasData", ideasData);
     } catch (error) {
       console.error("Error loading ideas:", error);
     } finally {
@@ -58,7 +59,9 @@ export function IdeasList() {
         topic: formData.topic,
         persona: formData.persona,
         goal: formData.goal,
-        targetAudience: formData.targetAudience || undefined,
+        targetAudience: formData.targetAudience ? 
+        formData.targetAudience.split(",").map((audience) => audience.trim())
+         : undefined,
         priority: formData.priority,
         tags: formData.tags
           ? formData.tags
@@ -356,7 +359,7 @@ export function IdeasList() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-lg font-medium text-gray-900">
-                        {idea.topic}
+                        Topic: {idea.topic}
                       </h3>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
@@ -366,18 +369,15 @@ export function IdeasList() {
                         {idea.priority}
                       </span>
                     </div>
-
-                    <p className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">Target:</span>{" "}
+                    <p className="text-sm text-gray-600 mb-2 text-left">
+                      <span className="font-medium">Persona:</span>{" "}
                       {idea.persona}
                     </p>
-
-                    <p className="text-sm text-gray-700 mb-3">{idea.goal}</p>
-
+                    <p className="text-sm text-gray-600 mb-3 text-left"><span className="font-medium">Goal:</span> {idea.goal}</p>
                     {idea.targetAudience && (
-                      <p className="text-sm text-gray-600 mb-2">
-                        <span className="font-medium">Audience:</span>{" "}
-                        {idea.targetAudience}
+                      <p className="text-sm text-gray-600 mb-2 text-left">
+                        <span className="font-medium">Target Audience:</span>{" "}
+                        {idea.targetAudience.join(", ")}
                       </p>
                     )}
 
@@ -386,15 +386,14 @@ export function IdeasList() {
                         {idea.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-gray-800"
                           >
                             {tag}
                           </span>
                         ))}
                       </div>
                     )}
-
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 text-right">
                       Added {new Date(idea.createdAt).toLocaleDateString()}
                     </p>
                   </div>

@@ -1,6 +1,5 @@
 // Type definitions for your existing Firebase blog schema
 export interface ExistingBlogPost {
-  id: string;
   title: string;
   content: string;
   shortDescription: string;
@@ -17,13 +16,16 @@ export interface ExistingBlogPost {
   publishedAt: any; // Firebase Timestamp
   createdAt: any; // Firebase Timestamp
   updatedAt: any; // Firebase Timestamp
+
+  id: string;
+  status: string;
 }
 
 // Mapping functions to convert between schemas
 export function mapExistingPostToBlogPost(existingPost: ExistingBlogPost): import('./post').BlogPost {
   return {
     id: existingPost.id,
-    status: existingPost.isPublished ? 'PUBLISHED' : 'DRAFT',
+    status: existingPost.status,
     scheduledAt: null,
     publishedAt: existingPost.publishedAt?.toMillis?.() || null,
     createdAt: existingPost.createdAt?.toMillis?.() || Date.now(),
@@ -55,7 +57,7 @@ export function mapExistingPostToBlogPost(existingPost: ExistingBlogPost): impor
     wordCount: estimateWordCount(existingPost.content),
     estimatedReadTime: existingPost.readTime,
     tags: existingPost.tags,
-    publicUrl: `https://peaknorth.com/blog/${existingPost.slug}`,
+    publicUrl: `https://peaknorth.net/blog/${existingPost.slug}`,
   };
 }
 

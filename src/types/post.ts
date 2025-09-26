@@ -89,7 +89,7 @@ export interface BlogIdea {
   topic: string;
   persona: string;
   goal: string;
-  targetAudience?: string;
+  targetAudience?: string[];
   priority: 'low' | 'medium' | 'high';
   used: boolean;
   createdAt: number;
