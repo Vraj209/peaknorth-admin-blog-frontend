@@ -8,11 +8,10 @@ export type PostStatus =
   | 'PUBLISHED';
 
 export interface PostBrief {
-  topic: string;
-  persona: string;
   goal: string;
-  targetAudience?: string;
-  keyPoints?: string[];
+  keyPoints: string[];
+  persona: string;
+  topic: string;
 }
 
 export interface PostOutline {
@@ -21,6 +20,7 @@ export interface PostOutline {
   sections: {
     heading: string;
     subPoints: string[];
+    keywords: string[];
   }[];
   conclusion: string;
   callToAction?: string;
@@ -37,10 +37,10 @@ export interface PostSEO {
 export interface BlogPost {
   id: string;
   status: PostStatus;
-  scheduledAt: number | null; // epoch ms in America/Toronto timezone intent
-  publishedAt: number | null;
-  createdAt: number;
-  updatedAt: number;
+  scheduledAt: Date | null;  // epoch ms in America/Toronto timezone intent
+  publishedAt: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
   
   // Content stages
   brief: PostBrief | null;
@@ -56,7 +56,6 @@ export interface BlogPost {
   wordCount?: number;
   estimatedReadTime?: number;
   tags?: string[];
-  category?: string;
   
   // Publishing
   publicUrl?: string;
@@ -92,6 +91,6 @@ export interface BlogIdea {
   targetAudience?: string[];
   priority: 'low' | 'medium' | 'high';
   used: boolean;
-  createdAt: number;
+  createdAt: Date;
   tags?: string[];
 }

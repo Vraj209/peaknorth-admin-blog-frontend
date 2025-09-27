@@ -1,63 +1,47 @@
-// Type definitions for your existing Firebase blog schema
-export interface ExistingBlogPost {
-  title: string;
-  content: string;
-  shortDescription: string;
-  slug: string;
-  bannerImage: string;
-  images: string[];
-  tags: string[];
-  author: {
-    name: string;
-    image: string;
-  };
-  readTime: number;
-  isPublished: boolean;
-  publishedAt: any; // Firebase Timestamp
-  createdAt: any; // Firebase Timestamp
-  updatedAt: any; // Firebase Timestamp
 
-  id: string;
-  status: string;
-}
+import type { BlogPost } from './post';
 
 // Mapping functions to convert between schemas
-export function mapExistingPostToBlogPost(existingPost: ExistingBlogPost): import('./post').BlogPost {
+export function mapExistingPostToBlogPost(existingPost: BlogPost): import('./post').BlogPost {
   return {
     id: existingPost.id,
+    scheduledAt: existingPost?.scheduledAt?.getTime?.() || null,
+    publishedAt: existingPost?.publishedAt?.getTime?.() || null,
+    createdAt: existingPost?.createdAt?.getTime?.() || null,
+    updatedAt: existingPost?.updatedAt?.getTime?.() || null,
     status: existingPost.status,
-    scheduledAt: null,
-    publishedAt: existingPost.publishedAt?.toMillis?.() || null,
-    createdAt: existingPost.createdAt?.toMillis?.() || Date.now(),
-    updatedAt: existingPost.updatedAt?.toMillis?.() || Date.now(),
-    
     brief: {
-      topic: existingPost.title,
-      persona: "Blog readers", // Default since not in existing schema
-      goal: existingPost.shortDescription,
+      goal: existingPost?.brief?.goal || "",
+      keyPoints: existingPost?.brief?.keyPoints || [],
+      persona: existingPost?.brief?.persona || "",
+      topic: existingPost?.brief?.topic || "",
     },
     
     outline: {
-      title: existingPost.title,
-      introduction: existingPost.shortDescription,
-      sections: [], // Would need to parse from content
-      conclusion: "",
+      title: existingPost?.outline?.title || "",
+      introduction: existingPost?.outline?.introduction || "",
+      sections: existingPost?.outline?.sections || [],
+      conclusion: existingPost?.outline?.conclusion || "",
+      callToAction: existingPost?.outline?.callToAction || "",
     },
     
-    draft_mdx: existingPost.content || null,
+    draft_mdx: existingPost.draft_mdx || null,
     
     seo: {
-      metaTitle: existingPost.title,
-      metaDescription: existingPost.shortDescription,
-      focusKeyword: existingPost.tags[0] || "",
-      keywords: existingPost.tags,
-      slug: existingPost.slug,
+      focusKeyword: existingPost?.seo?.focusKeyword || "",
+      keywords: existingPost?.seo?.keywords || [],
+      metaDescription: existingPost?.seo?.metaDescription || "",
+      metaTitle: existingPost?.seo?.metaTitle || "",
+      slug: existingPost?.seo?.slug || "",
     },
     
-    wordCount: estimateWordCount(existingPost.content),
-    estimatedReadTime: existingPost.readTime,
-    tags: existingPost.tags,
-    publicUrl: `https://peaknorth.net/blog/${existingPost.slug}`,
+    featuredImage: existingPost.featuredImage || undefined,
+    images: existingPost.images || [],
+
+    wordCount: estimateWordCount(existingPost?.wordCount?.toString() || ""),
+    estimatedReadTime: existingPost.estimatedReadTime,
+    tags: existingPost.tags || [],
+    publicUrl: `https://peaknorth.net/blog/${existingPost?.seo?.slug || ""}`,
   };
 }
 

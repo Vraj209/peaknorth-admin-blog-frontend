@@ -33,7 +33,7 @@ export function PostEdit() {
     try {
       const postData = await HybridFirestoreService.getPost(postId);
       setPost(postData);
-
+      console.log("postData in post edit:", postData);
       // Set active tab based on available content
       if (postData) {
         if (postData.draft_mdx) setActiveTab("draft");

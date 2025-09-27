@@ -134,7 +134,7 @@ export function PostEditWithImages() {
       if (isFeature) {
         // Remove featured image
         await HybridFirestoreService.updatePost(post.id, {
-          featuredImage: undefined,
+          featuredImage: null,
           updatedAt: Date.now(),
         });
         setPost((prev) =>
