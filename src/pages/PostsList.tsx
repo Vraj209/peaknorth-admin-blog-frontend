@@ -120,8 +120,30 @@ export function PostsList() {
           topic: createForm.topic,
           persona: createForm.persona,
           goal: createForm.goal,
-          targetAudience: createForm.targetAudience || undefined,
+          targetAudience: createForm.targetAudience ? createForm.targetAudience.split(",").map((audience) => audience.trim()) : undefined,
+          keyPoints: [],
         },
+        outline: {
+          title: createForm.topic,
+          introduction: createForm.goal,
+          sections: [],
+          conclusion: createForm.goal,
+        },
+        draft: {
+          mdx: "",
+          wordCount: 0,
+          estimatedReadTime: 0,
+        },
+        seo: {
+          metaTitle: createForm.topic,
+          metaDescription: createForm.goal,
+          focusKeyword: createForm.topic,
+          keywords: [],
+          slug: createForm.topic,
+        },
+        tags: [],
+        publicUrl: undefined,
+        errorMessage: undefined,
       };
 
       await HybridFirestoreService.createPost(postData);
@@ -259,13 +281,13 @@ export function PostsList() {
                     <div className="mt-3 flex items-center space-x-6 text-sm text-gray-500">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
-                        Created {new Date(post.createdAt).toLocaleDateString()}
+                        Created {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
                       </div>
 
                       {post.scheduledAt && (
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
-                          Scheduled {getRelativeTimeString(post.scheduledAt)}
+                          Scheduled {getRelativeTimeString(post.scheduledAt?.getTime?.() ?? 0)}
                         </div>
                       )}
 
@@ -277,8 +299,8 @@ export function PostsList() {
                         </div>
                       )}
 
-                      {post.wordCount && (
-                        <div>{post.wordCount.toLocaleString()} words</div>
+                      {post.draft?.wordCount && (
+                        <div>{post.draft?.wordCount.toLocaleString()} words</div>
                       )}
                     </div>
 

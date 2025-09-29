@@ -36,9 +36,9 @@ export function PostEdit() {
       console.log("postData in post edit:", postData);
       // Set active tab based on available content
       if (postData) {
-        if (postData.draft_mdx) setActiveTab("draft");
-        else if (postData.outline) setActiveTab("outline");
-        else if (postData.brief) setActiveTab("brief");
+        if (postData.draft?.mdx) setActiveTab("draft");
+        else if (postData?.outline) setActiveTab("outline");
+        else if (postData?.brief) setActiveTab("brief");
       }
     } catch (error) {
       console.error("Error loading post:", error);
@@ -124,7 +124,7 @@ export function PostEdit() {
                 {post.status.replace("_", " ")}
               </span>
               <span className="text-sm text-gray-500">
-                Created {new Date(post.createdAt).toLocaleDateString()}
+                Created {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -183,11 +183,11 @@ export function PostEdit() {
             <div>
               <p className="text-sm font-medium text-blue-900">
                 Scheduled for{" "}
-                {formatScheduledTime(post.scheduledAt, "America/Toronto")}
+                {formatScheduledTime(post.scheduledAt?.getTime?.() ?? 0, "America/Toronto")}
               </p>
               <p className="text-sm text-blue-700">
                 {(() => {
-                  const timeLeft = getTimeUntilPublish(post.scheduledAt);
+                  const timeLeft = getTimeUntilPublish(post.scheduledAt?.getTime?.() ?? 0);
                   if (timeLeft.isPast) return "Ready to publish now";
                   return `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m remaining`;
                 })()}
@@ -217,7 +217,7 @@ export function PostEdit() {
             {[
               { id: "brief", name: "Brief", available: !!post.brief },
               { id: "outline", name: "Outline", available: !!post.outline },
-              { id: "draft", name: "Draft", available: !!post.draft_mdx },
+              { id: "draft", name: "Draft", available: !!post.draft },
               { id: "seo", name: "SEO", available: !!post.seo },
             ].map((tab) => (
               <button
@@ -350,24 +350,24 @@ export function PostEdit() {
           )}
 
           {/* Draft Tab */}
-          {activeTab === "draft" && post.draft_mdx && (
+          {activeTab === "draft" && post.draft?.mdx && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">
                   Draft Content
                 </h3>
-                {post.wordCount && (
+                {post.draft?.wordCount && (
                   <span className="text-sm text-gray-500">
-                    {post.wordCount.toLocaleString()} words
-                    {post.estimatedReadTime &&
-                      ` • ${post.estimatedReadTime} min read`}
+                    {post.draft?.wordCount.toLocaleString()} words
+                    {post.draft?.estimatedReadTime &&
+                      ` • ${post.draft?.estimatedReadTime} min read`}
                   </span>
                 )}
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono">
-                  {post.draft_mdx}
+                  {post.draft?.mdx}
                 </pre>
               </div>
             </div>
@@ -427,7 +427,7 @@ export function PostEdit() {
           {/* Empty State */}
           {((activeTab === "brief" && !post.brief) ||
             (activeTab === "outline" && !post.outline) ||
-            (activeTab === "draft" && !post.draft_mdx) ||
+            (activeTab === "draft" && !post.draft) ||
             (activeTab === "seo" && !post.seo)) && (
             <div className="text-center py-12">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />

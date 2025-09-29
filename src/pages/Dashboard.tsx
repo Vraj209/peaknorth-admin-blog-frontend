@@ -48,7 +48,7 @@ export function Dashboard() {
         (p) =>
           (p.status === "APPROVED" || p.status === "SCHEDULED") &&
           p.scheduledAt &&
-          p.scheduledAt > Date.now()
+          (p.scheduledAt?.getTime?.() ?? 0) > Date.now()
       );
       setNextScheduled(scheduled || null);
     } catch (error) {
@@ -204,7 +204,7 @@ export function Dashboard() {
                   {nextScheduled.scheduledAt && (
                     <span>
                       {formatScheduledTime(
-                        nextScheduled.scheduledAt,
+                        nextScheduled.scheduledAt?.getTime?.() ?? 0,
                         "America/Toronto"
                       )}
                     </span>
@@ -214,7 +214,7 @@ export function Dashboard() {
                   <div className="text-sm text-gray-500">
                     {(() => {
                       const timeLeft = getTimeUntilPublish(
-                        nextScheduled.scheduledAt
+                        nextScheduled.scheduledAt?.getTime?.() ?? 0
                       );
                       if (timeLeft.isPast) return "Ready to publish";
                       return `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m remaining`;
@@ -270,7 +270,7 @@ export function Dashboard() {
                         {post.outline?.title || post.brief?.topic || "Untitled"}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        {new Date(post.createdAt).toLocaleDateString()}
+                        {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center space-x-3">

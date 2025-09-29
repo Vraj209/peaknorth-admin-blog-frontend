@@ -52,7 +52,7 @@ export function PostEditWithImages() {
       setUpdating(true);
       await HybridFirestoreService.updatePostStatus(post.id, status);
       setPost((prev) =>
-        prev ? { ...prev, status, updatedAt: Date.now() } : null
+        prev ? { ...prev, status, updatedAt: new Date(Date.now()) } : null
       );
     } catch (err) {
       console.error("Error updating post status:", err);
@@ -77,7 +77,7 @@ export function PostEditWithImages() {
       setUpdating(true);
       await HybridFirestoreService.updatePost(post.id, {
         featuredImage,
-        updatedAt: Date.now(),
+        updatedAt: new Date(Date.now()),
       });
       setPost((prev) => (prev ? { ...prev, featuredImage } : null));
     } catch (err) {
@@ -105,7 +105,7 @@ export function PostEditWithImages() {
       setUpdating(true);
       await HybridFirestoreService.updatePost(post.id, {
         images: updatedImages,
-        updatedAt: Date.now(),
+        updatedAt: new Date(Date.now()),
       });
       setPost((prev) => (prev ? { ...prev, images: updatedImages } : null));
     } catch (err) {
@@ -134,8 +134,8 @@ export function PostEditWithImages() {
       if (isFeature) {
         // Remove featured image
         await HybridFirestoreService.updatePost(post.id, {
-          featuredImage: null,
-          updatedAt: Date.now(),
+          featuredImage: undefined,
+          updatedAt: new Date(Date.now()),
         });
         setPost((prev) =>
           prev ? { ...prev, featuredImage: undefined } : null
@@ -147,7 +147,7 @@ export function PostEditWithImages() {
         );
         await HybridFirestoreService.updatePost(post.id, {
           images: updatedImages,
-          updatedAt: Date.now(),
+          updatedAt: new Date(Date.now()),
         });
         setPost((prev) => (prev ? { ...prev, images: updatedImages } : null));
       }
@@ -173,7 +173,7 @@ export function PostEditWithImages() {
         const updatedFeaturedImage = { ...post.featuredImage, ...updates };
         await HybridFirestoreService.updatePost(post.id, {
           featuredImage: updatedFeaturedImage,
-          updatedAt: Date.now(),
+          updatedAt: new Date(Date.now()),
         });
         setPost((prev) =>
           prev ? { ...prev, featuredImage: updatedFeaturedImage } : null
@@ -188,7 +188,7 @@ export function PostEditWithImages() {
       if (updatedImages.some((img) => img.url === imageUrl)) {
         await HybridFirestoreService.updatePost(post.id, {
           images: updatedImages,
-          updatedAt: Date.now(),
+          updatedAt: new Date(Date.now()),
         });
         setPost((prev) => (prev ? { ...prev, images: updatedImages } : null));
       }
@@ -240,7 +240,7 @@ export function PostEditWithImages() {
   }
 
   const timeUntil = post.scheduledAt
-    ? getTimeUntilPublish(post.scheduledAt)
+    ? getTimeUntilPublish(post.scheduledAt?.getTime?.() ?? 0)
     : null;
 
   return (
@@ -265,7 +265,7 @@ export function PostEditWithImages() {
                   {post.scheduledAt && (
                     <span className="text-sm text-gray-500">
                       Scheduled:{" "}
-                      {formatScheduledTime(post.scheduledAt, "America/Toronto")}
+                      {formatScheduledTime(post.scheduledAt?.getTime?.() ?? 0, "America/Toronto")}
                     </span>
                   )}
                 </div>
@@ -371,13 +371,13 @@ export function PostEditWithImages() {
                     </label>
                     <p className="mt-1 text-gray-900">{post.brief.goal}</p>
                   </div>
-                  {post.brief.targetAudience && (
+                  {post.brief?.targetAudience && post.brief.targetAudience.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Target Audience
                       </label>
                       <p className="mt-1 text-gray-900">
-                        {post.brief.targetAudience}
+                        {post.brief.targetAudience.join(", ")}
                       </p>
                     </div>
                   )}
@@ -448,18 +448,18 @@ export function PostEditWithImages() {
             )}
 
             {/* Draft Content */}
-            {post.draft_mdx && (
+            {post.draft?.mdx && (
               <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-lg font-semibold mb-4">Draft Content</h2>
                 <div className="prose max-w-none">
                   <pre className="whitespace-pre-wrap text-sm bg-gray-50 p-4 rounded border overflow-x-auto">
-                    {post.draft_mdx}
+                    {post.draft?.mdx}
                   </pre>
                 </div>
-                {post.wordCount && (
+                {post.draft?.wordCount && (
                   <div className="mt-4 text-sm text-gray-500">
-                    Word count: {post.wordCount} | Estimated read time:{" "}
-                    {post.estimatedReadTime} minutes
+                    Word count: {post.draft?.wordCount} | Estimated read time:{" "}
+                    {post.draft?.estimatedReadTime} minutes
                   </div>
                 )}
               </div>

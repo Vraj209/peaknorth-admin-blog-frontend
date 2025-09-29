@@ -12,6 +12,7 @@ export interface PostBrief {
   keyPoints: string[];
   persona: string;
   topic: string;
+  targetAudience?: string[];
 }
 
 export interface PostOutline {

@@ -25,11 +25,11 @@ export class FirestoreService {
       status: 'BRIEF',
       scheduledAt: null,
       publishedAt: null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
       brief: null,
       outline: null,
-      draft_mdx: null,
+      draft: null,
       seo: null,
       ...postData
     };
@@ -63,7 +63,7 @@ export class FirestoreService {
     };
 
     if (status === 'PUBLISHED') {
-      updates.publishedAt = Date.now();
+      updates.publishedAt = new Date(Date.now());
     }
 
     await this.updatePost(id, updates);
@@ -130,7 +130,7 @@ export class FirestoreService {
     const idea: Omit<BlogIdea, 'id'> = {
       ...ideaData,
       used: false,
-      createdAt: Date.now()
+      createdAt: new Date(Date.now())
     };
     
     const docRef = await addDoc(collection(db, IDEAS_COLLECTION), idea);

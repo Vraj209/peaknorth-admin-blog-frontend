@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BlogPost, PostStatus } from '../types/post';
-import type { ExistingBlogPost } from '../types/existing-post';
 import { mapExistingPostToBlogPost } from '../types/existing-post';
 
 const POSTS_COLLECTION = 'posts';
@@ -34,7 +33,7 @@ export class HybridFirestoreService {
         totalCount: allPosts.length,
         statuses: allPosts.map(p => p.status)
       });
-      return allPosts.sort((a, b) => b.createdAt - a.createdAt);
+      return allPosts.sort((a, b) => (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0));
     } catch (error) {
       console.error('Error fetching posts:', error);
       return [];
@@ -63,22 +62,20 @@ export class HybridFirestoreService {
       
       // This is an old format post, try to map it
       try {
-        return mapExistingPostToBlogPost({ ...data, id: doc.id } as ExistingBlogPost);
+        return mapExistingPostToBlogPost({ ...data, id: doc.id } as BlogPost);
       } catch (error) {
         console.warn('Error mapping existing post:', doc.id, error);
         return {
           id: doc.id,
-          status: 'DRAFT' as const,
+          status: 'DRAFT' as PostStatus,
           scheduledAt: null,
           publishedAt: null,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
+          createdAt: new Date(Date.now()),
+          updatedAt: new Date(Date.now()),
           brief: null,
           outline: null,
-          draft_mdx: null,
+          draft: null,
           seo: null,
-          wordCount: 0,
-          estimatedReadTime: 0,
           tags: [],
           publicUrl: undefined,
         };
@@ -106,14 +103,14 @@ export class HybridFirestoreService {
   static async createPost(postData: Partial<BlogPost>): Promise<string> {
     const now = Date.now();
     const post: Omit<BlogPost, 'id'> = {
-      status: 'BRIEF',
+      status: 'BRIEF' as PostStatus,
       scheduledAt: null,
       publishedAt: null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
       brief: null,
       outline: null,
-      draft_mdx: null,
+      draft: null,
       seo: null,
       ...postData
     };
@@ -137,7 +134,7 @@ export class HybridFirestoreService {
     const existingDocSnap = await getDoc(existingDocRef);
     
     if (existingDocSnap.exists()) {
-      const data = existingDocSnap.data() as ExistingBlogPost;
+      const data = existingDocSnap.data() as BlogPost;
       return mapExistingPostToBlogPost({ ...data, id: existingDocSnap.id });
     }
     
@@ -149,7 +146,7 @@ export class HybridFirestoreService {
     const docRef = doc(db, AUTOMATION_POSTS_COLLECTION, id);
     await updateDoc(docRef, {
       ...updates,
-      updatedAt: Date.now()
+      updatedAt: new Date(Date.now())
     });
   }
 
@@ -161,7 +158,7 @@ export class HybridFirestoreService {
     };
 
     if (status === 'PUBLISHED') {
-      updates.publishedAt = Date.now();
+      updates.publishedAt = new Date(Date.now());
     }
 
     await this.updatePost(id, updates);
