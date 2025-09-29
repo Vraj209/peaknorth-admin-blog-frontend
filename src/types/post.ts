@@ -34,10 +34,16 @@ export interface PostSEO {
   slug: string;
 }
 
+export interface PostDraft {
+  mdx: string;
+  wordCount: number;
+  estimatedReadTime: number;
+}
+
 export interface BlogPost {
   id: string;
   status: PostStatus;
-  scheduledAt: Date | null;  // epoch ms in America/Toronto timezone intent
+  scheduledAt: Date | null;  
   publishedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -45,7 +51,7 @@ export interface BlogPost {
   // Content stages
   brief: PostBrief | null;
   outline: PostOutline | null;
-  draft_mdx: string | null;
+  draft: PostDraft | null;
   seo: PostSEO | null;
   
   // Images
@@ -53,8 +59,6 @@ export interface BlogPost {
   images?: BlogImage[];
   
   // Metadata
-  wordCount?: number;
-  estimatedReadTime?: number;
   tags?: string[];
   
   // Publishing

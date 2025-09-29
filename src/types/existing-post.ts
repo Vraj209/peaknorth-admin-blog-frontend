@@ -5,10 +5,10 @@ import type { BlogPost } from './post';
 export function mapExistingPostToBlogPost(existingPost: BlogPost): import('./post').BlogPost {
   return {
     id: existingPost.id,
-    scheduledAt: existingPost?.scheduledAt?.getTime?.() || null,
-    publishedAt: existingPost?.publishedAt?.getTime?.() || null,
-    createdAt: existingPost?.createdAt?.getTime?.() || null,
-    updatedAt: existingPost?.updatedAt?.getTime?.() || null,
+    scheduledAt: existingPost?.scheduledAt || null,
+    publishedAt: existingPost?.publishedAt || null,
+    createdAt: existingPost?.createdAt || null,
+    updatedAt: existingPost?.updatedAt || null,
     status: existingPost.status,
     brief: {
       goal: existingPost?.brief?.goal || "",
@@ -25,7 +25,11 @@ export function mapExistingPostToBlogPost(existingPost: BlogPost): import('./pos
       callToAction: existingPost?.outline?.callToAction || "",
     },
     
-    draft_mdx: existingPost.draft_mdx || null,
+    draft: {
+      mdx: existingPost?.draft?.mdx || "",
+      wordCount: existingPost?.draft?.wordCount || 0,
+      estimatedReadTime: existingPost?.draft?.estimatedReadTime || 0,
+    },
     
     seo: {
       focusKeyword: existingPost?.seo?.focusKeyword || "",
@@ -38,20 +42,7 @@ export function mapExistingPostToBlogPost(existingPost: BlogPost): import('./pos
     featuredImage: existingPost.featuredImage || undefined,
     images: existingPost.images || [],
 
-    wordCount: estimateWordCount(existingPost?.wordCount?.toString() || ""),
-    estimatedReadTime: existingPost.estimatedReadTime,
     tags: existingPost.tags || [],
     publicUrl: `https://peaknorth.net/blog/${existingPost?.seo?.slug || ""}`,
   };
-}
-
-function estimateWordCount(content: string | null | undefined): number {
-  // Handle null/undefined content
-  if (!content || typeof content !== 'string') {
-    return 0;
-  }
-  
-  // Simple word count estimation from HTML content
-  const textContent = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  return textContent ? textContent.split(' ').length : 0;
 }
