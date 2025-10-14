@@ -94,68 +94,49 @@ export function Dashboard() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5 lg:gap-6">
-          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-gray-900" />
-              </div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">
-                Total Posts
-              </p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-                {stats.total}
-              </p>
-            </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+            <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+              Total Posts
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+              {stats.total}
+            </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-500" />
-              </div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Published</p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-                {stats.published}
-              </p>
-            </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+            <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+              Published
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+              {stats.published}
+            </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <Clock className="h-5 w-5 lg:h-6 lg:w-6 text-blue-500" />
-              </div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Scheduled</p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-                {stats.scheduled}
-              </p>
-            </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+            <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+              Scheduled
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+              {stats.scheduled}
+            </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <AlertTriangle className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
-              </div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">
-                Needs Review
-              </p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-                {stats.needsReview}
-              </p>
-            </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+            <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+              Needs Review
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+              {stats.needsReview}
+            </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <FileEdit className="h-5 w-5 lg:h-6 lg:w-6 text-gray-900" />
-              </div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Drafts</p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-                {stats.drafts}
-              </p>
-            </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+            <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+              Drafts
+            </p>
+            <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+              {stats.drafts}
+            </p>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import {
   getDoc, 
   addDoc, 
   updateDoc, 
+  deleteDoc,
   query, 
   where, 
   orderBy, 
@@ -168,6 +169,11 @@ export class FirestoreService {
       id: doc.id,
       ...doc.data()
     } as BlogIdea));
+  }
+
+  static async deleteIdea(id: string): Promise<void> {
+    const docRef = doc(db, IDEAS_COLLECTION, id);
+    await deleteDoc(docRef);
   }
 
   // Settings

@@ -81,6 +81,20 @@ export function IdeasList() {
     }
   };
 
+  const handleDelete = async (ideaId: string) => {
+    if (!window.confirm("Are you sure you want to delete this idea?")) {
+      return;
+    }
+
+    try {
+      await FirestoreService.deleteIdea(ideaId);
+      await loadIdeas();
+    } catch (error) {
+      console.error("Error deleting idea:", error);
+      alert("Failed to delete idea. Please try again.");
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -284,47 +298,34 @@ export function IdeasList() {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-3">
-        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <Lightbulb className="h-5 w-5 lg:h-6 lg:w-6 text-yellow-500" />
-            </div>
-            <p className="text-xs lg:text-sm font-medium text-gray-600">
-              Available Ideas
-            </p>
-            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-              {unusedIdeas.length}
-            </p>
-          </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+            Available Ideas
+          </p>
+          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+            {unusedIdeas.length}
+          </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-500" />
-            </div>
-            <p className="text-xs lg:text-sm font-medium text-gray-600">Used Ideas</p>
-            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-              {usedIdeas.length}
-            </p>
-          </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+            Used Ideas
+          </p>
+          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+            {usedIdeas.length}
+          </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <AlertCircle className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
-            </div>
-            <p className="text-xs lg:text-sm font-medium text-gray-600">
-              High Priority
-            </p>
-            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
-              {
-                unusedIdeas.filter((idea) => idea.priority === "high")
-                  .length
-              }
-            </p>
-          </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+            High Priority
+          </p>
+          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+            {
+              unusedIdeas.filter((idea) => idea.priority === "high")
+                .length
+            }
+          </p>
         </div>
       </div>
 
@@ -387,7 +388,11 @@ export function IdeasList() {
                     </p>
                   </div>
 
-                  <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0">
+                  <button 
+                    onClick={() => handleDelete(idea.id)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
+                    title="Delete idea"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
