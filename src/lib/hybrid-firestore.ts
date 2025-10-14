@@ -27,12 +27,6 @@ export class HybridFirestoreService {
       
       // Combine and sort by creation date
       const allPosts = [...existingPosts, ...automationPosts];
-      console.log("getAllPosts - Debug:", {
-        existingCount: existingPosts.length,
-        automationCount: automationPosts.length,
-        totalCount: allPosts.length,
-        statuses: allPosts.map(p => p.status)
-      });
       return allPosts.sort((a, b) => (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0));
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -48,14 +42,13 @@ export class HybridFirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    console.log('getExistingPosts - Raw data:', querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
+    
     
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
       
       // Check if this is actually a new format post (has brief, outline, status fields)
       if (data.brief || data.outline || data.status) {
-        console.log('Found new format post in old collection:', doc.id);
         // This is actually a new format post, treat it as such
         return { id: doc.id, ...data } as BlogPost;
       }
@@ -91,7 +84,6 @@ export class HybridFirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    console.log('getAutomationPosts - Raw data:', querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
     
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -215,10 +207,6 @@ export class HybridFirestoreService {
     ]);
     
     const allPosts = [...existingPosts, ...automationPosts];
-    console.log("Debug - Existing posts:", existingPosts.length);
-    console.log("Debug - Automation posts:", automationPosts.length);
-    console.log("Debug - All posts:", allPosts.length);
-    console.log("Debug - Posts with statuses:", allPosts.map(p => ({ id: p.id, status: p.status })));
     return {
       
       total: allPosts.length,

@@ -37,11 +37,8 @@ export function Dashboard() {
         HybridFirestoreService.getPostStats(),
         HybridFirestoreService.getRecentPosts(5),
       ]);
-
       setStats(statsData);
-      console.log("statsData", statsData);
       setRecentPosts(postsData);
-      console.log("postsData", postsData);
 
       // Find next scheduled post
       const scheduled = postsData.find(

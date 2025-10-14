@@ -42,7 +42,6 @@ export function IdeasList() {
     try {
       const ideasData = await FirestoreService.getAllIdeas();
       setIdeas(ideasData);
-      console.log("ideasData", ideasData);
     } catch (error) {
       console.error("Error loading ideas:", error);
     } finally {

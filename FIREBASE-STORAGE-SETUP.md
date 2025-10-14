@@ -112,8 +112,7 @@ import { ImageUpload } from "../components/ImageUpload";
 
 function MyComponent() {
   const handleImageUpload = (result: UploadResult) => {
-    console.log("Image uploaded:", result.url);
-    // Save to your blog post data
+    // TODO : Save to your blog post data
   };
 
   return (
@@ -133,7 +132,6 @@ import { MultiImageUpload } from "../components/ImageUpload";
 
 function MyComponent() {
   const handleImagesUpload = (results: UploadResult[]) => {
-    console.log("Images uploaded:", results);
     // Add to your blog post images array
   };
 
