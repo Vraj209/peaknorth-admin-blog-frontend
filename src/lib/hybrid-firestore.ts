@@ -12,6 +12,7 @@ import {
 import { db } from './firebase';
 import type { BlogPost, PostStatus } from '../types/post';
 import { mapExistingPostToBlogPost } from '../types/existing-post';
+import { FirestoreService } from './firestore';
 
 const POSTS_COLLECTION = 'posts';
 const AUTOMATION_POSTS_COLLECTION = 'automation_posts'; // New collection for automation posts
@@ -151,6 +152,18 @@ export class HybridFirestoreService {
 
     if (status === 'PUBLISHED') {
       updates.publishedAt = new Date(Date.now());
+      
+      // Mark the associated idea as used
+      const post = await this.getPost(id);
+      if (post?.ideaId) {
+        try {
+          await FirestoreService.markIdeaAsUsed(post.ideaId);
+          console.log(`Marked idea ${post.ideaId} as used for published post ${id}`);
+        } catch (error) {
+          console.error('Error marking idea as used:', error);
+          // Don't fail the post update if idea marking fails
+        }
+      }
     }
 
     await this.updatePost(id, updates);

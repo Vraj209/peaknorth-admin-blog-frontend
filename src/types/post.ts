@@ -61,6 +61,7 @@ export interface BlogPost {
   
   // Metadata
   tags?: string[];
+  ideaId?: string; // Link to the idea that generated this post
   
   // Publishing
   publicUrl?: string;
