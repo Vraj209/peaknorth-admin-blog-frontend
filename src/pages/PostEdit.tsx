@@ -58,7 +58,7 @@ export function PostEdit() {
     try {
      
       // Try direct API call first
-      const apiUrl = `${backendUrl}/posts/${post.id}/`;
+      const apiUrl = `${backendUrl}/api/v1/posts/${post.id}/`;
         
       const response = await fetch(apiUrl, {
         method: 'PUT',
