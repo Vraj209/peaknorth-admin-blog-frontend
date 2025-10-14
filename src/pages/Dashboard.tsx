@@ -6,8 +6,9 @@ import {
   CheckCircle,
   AlertTriangle,
   Calendar,
-  TrendingUp,
+  FileEdit,
   Lightbulb,
+  ArrowRight,
 } from "lucide-react";
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
 import { formatScheduledTime, getTimeUntilPublish } from "../lib/scheduling";
@@ -58,146 +59,126 @@ export function Dashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "text-green-600 bg-green-50";
+        return "bg-green-500 text-white";
       case "APPROVED":
-        return "text-blue-600 bg-blue-50";
+        return "bg-blue-500 text-white";
       case "SCHEDULED":
-        return "text-purple-600 bg-purple-50";
+        return "bg-purple-500 text-white";
       case "NEEDS_REVIEW":
-        return "text-orange-600 bg-orange-50";
+        return "bg-orange-500 text-white";
       case "DRAFT":
-        return "text-gray-600 bg-gray-50";
+        return "bg-gray-500 text-white";
       default:
-        return "text-gray-600 bg-gray-50";
+        return "bg-gray-500 text-white";
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="mt-1 lg:mt-2 text-sm lg:text-base text-gray-600">
           Overview of your blog automation system
         </p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <FileText className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Posts
-                  </p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stats.total}
-                  </p>
-                </div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5 lg:gap-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-gray-900" />
               </div>
+              <p className="text-xs lg:text-sm font-medium text-gray-600">
+                Total Posts
+              </p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+                {stats.total}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-400" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Published</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stats.published}
-                  </p>
-                </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-500" />
               </div>
+              <p className="text-xs lg:text-sm font-medium text-gray-600">Published</p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+                {stats.published}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Clock className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Scheduled</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stats.scheduled}
-                  </p>
-                </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <Clock className="h-5 w-5 lg:h-6 lg:w-6 text-blue-500" />
               </div>
+              <p className="text-xs lg:text-sm font-medium text-gray-600">Scheduled</p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+                {stats.scheduled}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <AlertTriangle className="h-6 w-6 text-orange-400" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    Needs Review
-                  </p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stats.needsReview}
-                  </p>
-                </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <AlertTriangle className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
               </div>
+              <p className="text-xs lg:text-sm font-medium text-gray-600">
+                Needs Review
+              </p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+                {stats.needsReview}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-purple-400" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Drafts</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stats.drafts}
-                  </p>
-                </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <FileEdit className="h-5 w-5 lg:h-6 lg:w-6 text-gray-900" />
               </div>
+              <p className="text-xs lg:text-sm font-medium text-gray-600">Drafts</p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+                {stats.drafts}
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-2">
         {/* Next Scheduled Post */}
         {nextScheduled && (
-          <div className="bg-white shadow-sm rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+              <h2 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
+                <Calendar className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                 Next Scheduled Post
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               <div className="space-y-3">
-                <h3 className="font-medium text-gray-900">
+                <h3 className="font-medium text-gray-900 text-sm lg:text-base">
                   {nextScheduled.outline?.title ||
                     nextScheduled.brief?.topic ||
                     "Untitled"}
                 </h3>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-xs lg:text-sm text-gray-600">
+                  <Clock className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
                   {nextScheduled.scheduledAt && (
                     <span>
                       {formatScheduledTime(
@@ -208,7 +189,7 @@ export function Dashboard() {
                   )}
                 </div>
                 {nextScheduled.scheduledAt && (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs lg:text-sm text-gray-500">
                     {(() => {
                       const timeLeft = getTimeUntilPublish(
                         nextScheduled.scheduledAt?.getTime?.() ?? 0
@@ -220,7 +201,7 @@ export function Dashboard() {
                 )}
                 <div className="flex justify-between items-center pt-2">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${getStatusColor(
                       nextScheduled.status
                     )}`}
                   >
@@ -228,9 +209,9 @@ export function Dashboard() {
                   </span>
                   <Link
                     to={`/posts/${nextScheduled.id}`}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                    className="flex items-center text-gray-900 hover:text-gray-700 text-xs lg:text-sm font-medium"
                   >
-                    Review →
+                    Review <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4 ml-1" />
                   </Link>
                 </div>
               </div>
@@ -239,40 +220,40 @@ export function Dashboard() {
         )}
 
         {/* Recent Posts */}
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-base lg:text-lg font-semibold text-gray-900">
                 Recent Posts
               </h2>
               <Link
                 to="/posts"
-                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                className="flex items-center text-gray-900 hover:text-gray-700 text-xs lg:text-sm font-medium"
               >
-                View all
+                View all <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4 ml-1" />
               </Link>
             </div>
           </div>
           <div className="divide-y divide-gray-200">
             {recentPosts.length === 0 ? (
-              <div className="px-6 py-8 text-center text-gray-500">
+              <div className="px-4 lg:px-6 py-6 lg:py-8 text-center text-gray-500 text-sm">
                 No posts yet. Create your first post to get started.
               </div>
             ) : (
               recentPosts.map((post) => (
-                <div key={post.id} className="px-6 py-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
+                <div key={post.id} className="px-4 lg:px-6 py-3 lg:py-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                      <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate">
                         {post.outline?.title || post.brief?.topic || "Untitled"}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(
                           post.status
                         )}`}
                       >
@@ -280,9 +261,9 @@ export function Dashboard() {
                       </span>
                       <Link
                         to={`/posts/${post.id}`}
-                        className="text-primary-600 hover:text-primary-700 text-sm"
+                        className="text-gray-900 hover:text-gray-700 text-xs lg:text-sm"
                       >
-                        View
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -294,38 +275,38 @@ export function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white shadow-sm rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+          <h2 className="text-base lg:text-lg font-semibold text-gray-900">Quick Actions</h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="p-4 lg:p-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:gap-4">
             <Link
               to="/posts"
-              className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="group relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-4 lg:p-6 text-center hover:border-black hover:bg-gray-50 transition-all"
             >
-              <FileText className="mx-auto h-8 w-8 text-gray-400" />
-              <span className="mt-2 block text-sm font-medium text-gray-900">
+              <FileText className="mx-auto h-6 w-6 lg:h-8 lg:w-8 text-gray-400 group-hover:text-black transition-colors" />
+              <span className="mt-2 block text-xs lg:text-sm font-medium text-gray-900">
                 Manage Posts
               </span>
             </Link>
 
             <Link
               to="/ideas"
-              className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="group relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-4 lg:p-6 text-center hover:border-black hover:bg-gray-50 transition-all"
             >
-              <Lightbulb className="mx-auto h-8 w-8 text-gray-400" />
-              <span className="mt-2 block text-sm font-medium text-gray-900">
+              <Lightbulb className="mx-auto h-6 w-6 lg:h-8 lg:w-8 text-gray-400 group-hover:text-black transition-colors" />
+              <span className="mt-2 block text-xs lg:text-sm font-medium text-gray-900">
                 Add Ideas
               </span>
             </Link>
 
             <Link
               to="/settings"
-              className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="group relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-4 lg:p-6 text-center hover:border-black hover:bg-gray-50 transition-all"
             >
-              <Calendar className="mx-auto h-8 w-8 text-gray-400" />
-              <span className="mt-2 block text-sm font-medium text-gray-900">
+              <Calendar className="mx-auto h-6 w-6 lg:h-8 lg:w-8 text-gray-400 group-hover:text-black transition-colors" />
+              <span className="mt-2 block text-xs lg:text-sm font-medium text-gray-900">
                 Schedule Settings
               </span>
             </Link>

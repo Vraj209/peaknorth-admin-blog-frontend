@@ -84,13 +84,13 @@ export function IdeasList() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800";
+        return "bg-red-500 text-white";
       case "medium":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-500 text-white";
       case "low":
-        return "bg-green-100 text-green-800";
+        return "bg-green-500 text-white";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-500 text-white";
     }
   };
 
@@ -100,24 +100,24 @@ export function IdeasList() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Ideas</h1>
-          <p className="mt-2 text-gray-600">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 lg:gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Blog Ideas</h1>
+          <p className="mt-1 lg:mt-2 text-sm lg:text-base text-gray-600">
             Manage your blog post ideas for the automation workflow
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="inline-flex items-center justify-center px-4 py-2.5 lg:py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Idea
@@ -126,26 +126,26 @@ export function IdeasList() {
 
       {/* Add Idea Form */}
       {showForm && (
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900">
               Add New Blog Idea
             </h2>
           </div>
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-4">
+            <div className="grid grid-cols-1 gap-3 lg:gap-4 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="topic"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-900 mb-1.5"
                 >
-                  Topic *
+                  Topic <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="topic"
                   required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
                   value={formData.topic}
                   onChange={(e) =>
                     setFormData({ ...formData, topic: e.target.value })
@@ -157,15 +157,15 @@ export function IdeasList() {
               <div>
                 <label
                   htmlFor="persona"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-900 mb-1.5"
                 >
-                  Target Persona *
+                  Target Persona <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="persona"
                   required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
                   value={formData.persona}
                   onChange={(e) =>
                     setFormData({ ...formData, persona: e.target.value })
@@ -178,15 +178,15 @@ export function IdeasList() {
             <div>
               <label
                 htmlFor="goal"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-900 mb-1.5"
               >
-                Goal *
+                Goal <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="goal"
                 required
                 rows={3}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors resize-none"
                 value={formData.goal}
                 onChange={(e) =>
                   setFormData({ ...formData, goal: e.target.value })
@@ -198,14 +198,14 @@ export function IdeasList() {
             <div>
               <label
                 htmlFor="targetAudience"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-900 mb-1.5"
               >
-                Target Audience (Optional)
+                Target Audience <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <input
                 type="text"
                 id="targetAudience"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
                 value={formData.targetAudience}
                 onChange={(e) =>
                   setFormData({ ...formData, targetAudience: e.target.value })
@@ -214,17 +214,17 @@ export function IdeasList() {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:gap-4 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="priority"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-900 mb-1.5"
                 >
                   Priority
                 </label>
                 <select
                   id="priority"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer"
                   value={formData.priority}
                   onChange={(e) =>
                     setFormData({
@@ -242,14 +242,14 @@ export function IdeasList() {
               <div>
                 <label
                   htmlFor="tags"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-900 mb-1.5"
                 >
-                  Tags (Optional)
+                  Tags <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <input
                   type="text"
                   id="tags"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-black transition-colors"
                   value={formData.tags}
                   onChange={(e) =>
                     setFormData({ ...formData, tags: e.target.value })
@@ -259,21 +259,21 @@ export function IdeasList() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => {
                   setShowForm(false);
                   setFormData(initialForm);
                 }}
-                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 disabled:opacity-50 transition-colors"
               >
                 {submitting ? "Adding..." : "Add Idea"}
               </button>
@@ -283,121 +283,111 @@ export function IdeasList() {
       )}
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-          <div className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Lightbulb className="h-6 w-6 text-yellow-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">
-                  Available Ideas
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {unusedIdeas.length}
-                </p>
-              </div>
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <Lightbulb className="h-5 w-5 lg:h-6 lg:w-6 text-yellow-500" />
             </div>
+            <p className="text-xs lg:text-sm font-medium text-gray-600">
+              Available Ideas
+            </p>
+            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+              {unusedIdeas.length}
+            </p>
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-          <div className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="h-6 w-6 text-green-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Used Ideas</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {usedIdeas.length}
-                </p>
-              </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <CheckCircle className="h-5 w-5 lg:h-6 lg:w-6 text-green-500" />
             </div>
+            <p className="text-xs lg:text-sm font-medium text-gray-600">Used Ideas</p>
+            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+              {usedIdeas.length}
+            </p>
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow-sm rounded-lg">
-          <div className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-6 w-6 text-orange-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">
-                  High Priority
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {
-                    unusedIdeas.filter((idea) => idea.priority === "high")
-                      .length
-                  }
-                </p>
-              </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <AlertCircle className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
             </div>
+            <p className="text-xs lg:text-sm font-medium text-gray-600">
+              High Priority
+            </p>
+            <p className="text-xl lg:text-2xl font-bold text-gray-900 mt-1">
+              {
+                unusedIdeas.filter((idea) => idea.priority === "high")
+                  .length
+              }
+            </p>
           </div>
         </div>
       </div>
 
       {/* Available Ideas */}
       {unusedIdeas.length > 0 && (
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900">
               Available Ideas
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs lg:text-sm text-gray-600 mt-0.5">
               These ideas are ready to be used by the automation workflow
             </p>
           </div>
           <div className="divide-y divide-gray-200">
             {unusedIdeas.map((idea) => (
-              <div key={idea.id} className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        Topic: {idea.topic}
+              <div key={idea.id} className="p-4 lg:p-6 text-left">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm lg:text-base font-semibold text-gray-900">
+                        {idea.topic}
                       </h3>
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
+                        className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${getPriorityColor(
                           idea.priority
                         )}`}
                       >
                         {idea.priority}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2 text-left">
+                    <p className="text-xs lg:text-sm text-gray-600 text-left">
                       <span className="font-medium">Persona:</span>{" "}
                       {idea.persona}
                     </p>
-                    <p className="text-sm text-gray-600 mb-3 text-left"><span className="font-medium">Goal:</span> {idea.goal}</p>
+                    <p className="text-xs lg:text-sm text-gray-600 text-left">
+                      <span className="font-medium">Goal:</span> {idea.goal}
+                    </p>
                     {idea.targetAudience && (
-                      <p className="text-sm text-gray-600 mb-2 text-left">
+                      <p className="text-xs lg:text-sm text-gray-600 text-left">
                         <span className="font-medium">Target Audience:</span>{" "}
                         {idea.targetAudience.join(", ")}
                       </p>
                     )}
 
                     {idea.tags && idea.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1.5 text-left">
                         {idea.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-gray-800"
+                            className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700"
                           >
                             {tag}
                           </span>
                         ))}
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 text-right">
+                    <p className="text-xs text-gray-500 text-left">
                       Added {new Date(idea.createdAt).toLocaleDateString()}
                     </p>
                   </div>
 
-                  <button className="ml-4 p-2 text-gray-400 hover:text-red-600">
+                  <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -409,25 +399,25 @@ export function IdeasList() {
 
       {/* Used Ideas */}
       {usedIdeas.length > 0 && (
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Used Ideas</h2>
-            <p className="text-sm text-gray-600">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900">Used Ideas</h2>
+            <p className="text-xs lg:text-sm text-gray-600 mt-0.5">
               These ideas have been turned into blog posts
             </p>
           </div>
           <div className="divide-y divide-gray-200">
             {usedIdeas.map((idea) => (
-              <div key={idea.id} className="p-6 bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-600">
+              <div key={idea.id} className="p-4 lg:p-6 bg-gray-50 text-left">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm lg:text-base font-medium text-gray-600">
                         {idea.topic}
                       </h3>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
                     </div>
-                    <p className="text-sm text-gray-500">{idea.persona}</p>
+                    <p className="text-xs lg:text-sm text-gray-500 text-left">{idea.persona}</p>
                   </div>
                 </div>
               </div>
@@ -438,18 +428,18 @@ export function IdeasList() {
 
       {/* Empty State */}
       {ideas.length === 0 && (
-        <div className="bg-white shadow-sm rounded-lg p-12 text-center">
-          <Lightbulb className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 lg:p-12 text-center">
+          <Lightbulb className="mx-auto h-10 w-10 lg:h-12 lg:w-12 text-gray-400" />
+          <h3 className="mt-3 text-sm lg:text-base font-medium text-gray-900">
             No ideas yet
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-xs lg:text-sm text-gray-500">
             Get started by adding your first blog post idea.
           </p>
           <div className="mt-6">
             <button
               onClick={() => setShowForm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add your first idea
