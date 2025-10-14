@@ -12,6 +12,7 @@ import {
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
 import { formatScheduledTime, getTimeUntilPublish } from "../lib/scheduling";
 import type { BlogPost, PostStatus } from "../types/post";
+import { backendUrl } from "../lib/constant";
 
 export function PostEdit() {
   const { id } = useParams<{ id: string }>();
@@ -55,9 +56,9 @@ export function PostEdit() {
     setStatusAction(status);
     
     try {
-      
+     
       // Try direct API call first
-      const apiUrl = `http://localhost:3000/api/v1/posts/${post.id}/`;
+      const apiUrl = `${backendUrl}/posts/${post.id}/`;
         
       const response = await fetch(apiUrl, {
         method: 'PUT',
