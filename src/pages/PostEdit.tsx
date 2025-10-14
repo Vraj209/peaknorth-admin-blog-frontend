@@ -69,7 +69,7 @@ export function PostEdit() {
         body: JSON.stringify({ status })
       });
 
-      
+      console.log("API response:", response);
       // Get response text first to see what we're actually getting
       const responseText = await response.text();
 
@@ -457,7 +457,7 @@ export function PostEdit() {
                       onClick={() => handleStatusUpdate('NEEDS_REVIEW')}
                       disabled={updating}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                    >
+                    > 
                       {updating && statusAction === 'NEEDS_REVIEW' && (
                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
