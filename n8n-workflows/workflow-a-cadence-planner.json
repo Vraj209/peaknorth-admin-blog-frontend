@@ -1,40 +1,27 @@
 {
-  "name": "PeakNorth Blog - Cadence Planner (WF-A)",
+  "name": "Peaknorth-blog-automation-2",
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "days",
-              "daysInterval": 2
-            }
-          ]
-        },
-        "timezone": "America/Toronto"
-      },
-      "id": "cron-trigger",
-      "name": "Every 2 Days at 10:00",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [240, 300]
-    },
-    {
-      "parameters": {
-        "url": "=http://localhost:3001/api/v1/ideas/pick",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "fromEmail": "peaknorthinc@gmail.com",
+        "toEmail": "vrajpanchal209@gmail.com",
+        "subject": "Blog Posts Pending Approval",
+        "text": "Blog Posts are pending for approvals",
         "options": {}
       },
-      "id": "pick-idea",
-      "name": "Pick Blog Idea",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [460, 300],
+      "id": "55d72354-c255-440c-8740-d64eada80efd",
+      "name": "Send Pending Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        656
+      ],
+      "webhookId": "23436410-fc66-4820-ae8c-276a005e0e24",
       "credentials": {
-        "httpHeaderAuth": {
-          "id": "n8n-api-key",
-          "name": "N8N API Key"
+        "smtp": {
+          "id": "j3KhWSo5z8yhNjgD",
+          "name": "SMTP account"
         }
       }
     },
@@ -44,7 +31,485 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-pending-posts",
+              "leftValue": "={{$node['Get Publishing Stats'].json.readyToPublish}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "938c9e6b-ed48-4902-b04b-a6a9a0a1c907",
+      "name": "Check Pending Posts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/publish/stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "238c487d-b04a-48da-82fb-d60ca582d393",
+      "name": "Get Publishing Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -848,
+        672
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "peaknorthinc@gmail.com",
+        "toEmail": "vrajpanchal209@gmail.com",
+        "subject": "Blog Post Published Successfully",
+        "text": "Blog successfully deployed",
+        "options": {}
+      },
+      "id": "d5c1c24b-673d-46cd-b7b4-0bf800a63307",
+      "name": "Send Success Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        576,
+        448
+      ],
+      "webhookId": "d4a9a2e8-e927-4864-9a0c-503e21b4c457",
+      "credentials": {
+        "smtp": {
+          "id": "j3KhWSo5z8yhNjgD",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/posts/{{$node['Split In Batches'].json.id}}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"htmlContent\": {{JSON.stringify($node['Render HTML'].json.htmlContent)}},\n  \"publicUrl\": \"{{$node['Render HTML'].json.publicUrl}}\",\n  \"slug\": \"{{$node['Render HTML'].json.slug}}\"\n}",
+        "options": {}
+      },
+      "id": "3331df99-bca2-40e0-bee3-e6d1570c6a32",
+      "name": "Publish Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        256,
+        464
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convert MDX to HTML (simplified)\n// In production, you'd use a proper MDX compiler\nconst mdxContent = $node['Split In Batches'].json.draft_mdx;\nconst seo = $node['Parse SEO'].json.seo;\n\n// Simple MDX to HTML conversion (you should use a proper library)\nlet htmlContent = mdxContent\n  .replace(/^# (.*$)/gm, '<h1>$1</h1>')\n  .replace(/^## (.*$)/gm, '<h2>$1</h2>')\n  .replace(/^### (.*$)/gm, '<h3>$1</h3>')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  .replace(/\\*(.*?)\\*/g, '<em>$1</em>')\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/^(.*)$/gm, '<p>$1</p>');\n\n// Generate full HTML page\nconst fullHtml = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>${seo.metaTitle}</title>\n  <meta name=\"description\" content=\"${seo.metaDescription}\">\n  <meta name=\"keywords\" content=\"${seo.keywords.join(', ')}\">\n  <link rel=\"canonical\" href=\"https://peaknorth.com/blog/${seo.slug}\">\n</head>\n<body>\n  <article>\n    ${htmlContent}\n  </article>\n</body>\n</html>`;\n\nconst publicUrl = `https://peaknorth.com/blog/${seo.slug}`;\n\nreturn [{\n  json: {\n    htmlContent: fullHtml,\n    publicUrl: publicUrl,\n    slug: seo.slug\n  }\n}];"
+      },
+      "id": "40fb6759-d874-467f-a197-104d3f425760",
+      "name": "Render HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/posts/{{$node['Split In Batches'].json.id}}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"SCHEDULED\",\n  \"patch\": {\n    \"seo\": {{$node['Parse SEO'].json.seo}}\n  }\n}",
+        "options": {}
+      },
+      "id": "7ce02a26-56e0-439e-8fcd-3137902099db",
+      "name": "Save SEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -176,
+        464
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse SEO response\nconst openaiResponse = $input.all()[0].json;\nconst seoText = openaiResponse.choices[0].message.content;\n\ntry {\n  const seo = JSON.parse(seoText);\n  return [{ json: { seo } }];\n} catch (error) {\n  console.error('Failed to parse SEO JSON:', error);\n  // Fallback SEO\n  const title = $node['Split In Batches'].json.outline?.title || 'Blog Post';\n  return [{\n    json: {\n      seo: {\n        metaTitle: title,\n        metaDescription: `Read our latest blog post: ${title}`,\n        focusKeyword: title.toLowerCase().split(' ')[0],\n        keywords: [title.toLowerCase()],\n        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')\n      }\n    }\n  }];\n}"
+      },
+      "id": "f9988503-7583-4a1b-906e-00e93a81752a",
+      "name": "Parse SEO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4.1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Generate SEO metadata for a blog post. Return only valid JSON with this structure: {\\\"metaTitle\\\": \\\"...\\\", \\\"metaDescription\\\": \\\"...\\\", \\\"focusKeyword\\\": \\\"...\\\", \\\"keywords\\\": [...], \\\"slug\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Title: {{$json.outline.title}}\\nContent: {{$json.draft_mdx.substring(0, 500)}}...\"\n    }\n  ],\n  \"temperature\": 0.3\n}",
+        "options": {}
+      },
+      "id": "0eec9d3d-2422-42eb-b574-40bdd6253027",
+      "name": "Generate SEO (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -624,
+        432
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        },
+        "httpBearerAuth": {
+          "id": "4ExfoWXcu3MGRmGX",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {}
+      },
+      "id": "6b4b5f5a-1c24-498a-a0d5-fdb584f7e9dc",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -848,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-posts-check",
+              "leftValue": "={{$node['Get Ready Posts'].json.length}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9490aa6d-80d0-4d6c-a493-2f3e4a8d9249",
+      "name": "Check Posts Available",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/publish/ready",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a57edf25-78f1-4c9f-abbc-ee4abbc38146",
+      "name": "Get Ready Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -1184,
+        560
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "9c1ae07d-8f3e-4297-87c7-4189e50b17a3",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "peaknorthinc@gmail.com",
+        "toEmail": "vrajpanchal209@gmail.com",
+        "options": {}
+      },
+      "id": "dea34628-5456-4296-8a81-60f2fbb3bc7a",
+      "name": "Send Reminder to Add Ideas",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        176
+      ],
+      "webhookId": "e0970c43-ead9-4dfb-8d00-fde3fbcc1f04",
+      "credentials": {
+        "smtp": {
+          "id": "j3KhWSo5z8yhNjgD",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "peaknorthinc@gmail.com",
+        "toEmail": "vrajpanchal209@gmail.com",
+        "subject": "New Blog Post Ready for Review",
+        "emailFormat": "html",
+        "html": "=<!DOCTYPE html>\n<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <title>New Blog Post Ready for Review</title>\n\n  <!-- Preheader (hidden preview text) -->\n  <meta name=\"x-preheader\" content=\"A new draft is awaiting your review. Click to open the review page.\">\n  <style>\n    /* ----- Base resets ----- */\n    html, body { margin:0 !important; padding:0 !important; height:100% !important; width:100% !important; }\n    * { -ms-text-size-adjust:100%; -webkit-text-size-adjust:100%; }\n    table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }\n    img { -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; display:block; }\n    a { text-decoration:none; }\n    /* Fix for Gmail iOS right gutter */\n    .gmail-fix { display:none; display:none !important; }\n\n    /* ----- Layout & type ----- */\n    body { background:#f7f7f8; }\n    .wrapper { width:100%; background:#f7f7f8; padding:32px 0; }\n    .container { width:600px; margin:0 auto; }\n    .card { background:#ffffff; border-radius:14px; box-shadow:0 2px 10px rgba(15, 18, 20, 0.05); overflow:hidden; }\n    .px { padding-left:32px; padding-right:32px; }\n    .py { padding-top:28px; padding-bottom:28px; }\n    .p { padding:28px 32px; }\n    .pt-0 { padding-top:0 !important; }\n    .pb-0 { padding-bottom:0 !important; }\n    .divider { height:1px; background:#ececee; line-height:1px; }\n\n    .text { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#121416; }\n    .muted { color:#6a6f76; }\n    .h1 { margin:0; font-size:22px; line-height:1.35; font-weight:700; letter-spacing:-0.01em; }\n    .h2 { margin:0; font-size:14px; line-height:1.6; font-weight:600; color:#111316; }\n    .body { margin:0; font-size:14px; line-height:1.7; color:#2a2f34; }\n    .caption { font-size:12px; line-height:1.6; color:#6a6f76; }\n\n    .tag { display:inline-block; padding:4px 10px; border-radius:999px; background:#eef2ff; color:#3940a8; font-size:12px; font-weight:600; vertical-align:middle; }\n    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; }\n\n    /* ----- Buttons (primary has VML fallback for Outlook) ----- */\n    .btn { font-weight:700; font-size:14px; line-height:1; display:inline-block; border-radius:12px; padding:14px 20px; background:#111316; color:#ffffff !important; }\n    .btn-secondary { font-weight:600; font-size:13px; line-height:1; display:inline-block; border-radius:12px; padding:12px 16px; background:#f4f5f6; color:#111316 !important; border:1px solid #ececee; }\n\n    /* ----- Header link ----- */\n    .brand { color:#111316 !important; font-weight:800; letter-spacing:0.2px; }\n\n    /* ----- Mobile ----- */\n    @media screen and (max-width: 600px) {\n      .container { width:100% !important; }\n      .px { padding-left:20px !important; padding-right:20px !important; }\n      .p { padding:20px !important; }\n      .py { padding-top:20px !important; padding-bottom:20px !important; }\n      .stack { display:block !important; width:100% !important; }\n      .spacer { height:16px !important; }\n    }\n\n    /* ----- Dark mode (prefers-color-scheme) ----- */\n    @media (prefers-color-scheme: dark) {\n      body, .wrapper { background:#0b0c0d !important; }\n      .card { background:#151718 !important; box-shadow:none !important; }\n      .text, .h1, .h2, .brand { color:#f2f3f4 !important; }\n      .body { color:#e7e9ea !important; }\n      .muted, .caption { color:#a8afb6 !important; }\n      .divider { background:#222426 !important; }\n      .btn { background:#f2f3f4 !important; color:#0b0c0d !important; }\n      .btn-secondary { background:#1a1d1f !important; border-color:#222426 !important; color:#e7e9ea !important; }\n      .tag { background:#1e2430 !important; color:#b9c7ff !important; }\n    }\n  </style>\n  <!--[if mso]>\n    <style>\n      .text, .body, .h1, .h2, .muted, .caption { font-family:Segoe UI, Arial, sans-serif !important; }\n    </style>\n  <![endif]-->\n</head>\n<body class=\"text\">\n\n  <!-- Hidden preheader text for inbox preview -->\n  <div style=\"display:none; max-height:0; overflow:hidden; mso-hide:all;\" class=\"gmail-fix\">\n    A new draft is awaiting your review. Click to open the review page.\n  </div>\n\n  <div class=\"wrapper\">\n    <table role=\"presentation\" class=\"container\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" align=\"center\">\n      <tr>\n        <td class=\"px\">\n\n          <!-- Header -->\n          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:16px;\">\n            <tr>\n              <td class=\"py pt-0\">\n                <a href=\"{{ 'https://peaknorth.net/' }}\" class=\"brand\">PeakNorth</a>\n              </td>\n              <td class=\"py pt-0\" align=\"right\">\n                <span class=\"caption muted\">Blog Automation</span>\n              </td>\n            </tr>\n          </table>\n\n          <!-- Card -->\n          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"card\">\n            <tr>\n              <td class=\"p\">\n\n                <!-- Eyebrow -->\n                <p class=\"caption\" style=\"margin:0 0 8px 0;\">New blog post needs your review</p>\n\n                <!-- Title -->\n                <h1 class=\"h1\">{{ $json.data.outline.title }}</h1>\n\n                <!-- Meta line -->\n                <p class=\"body\" style=\"margin:10px 0 0 0;\">\n                  Status:\n                  <span class=\"tag\">{{ $json.data.status || 'NEEDS_REVIEW' }}</span>\n                  &nbsp;•&nbsp;\n                  ID:\n                  <span class=\"code\">{{ $json.data.id }}</span>\n                </p>\n\n              </td>\n            </tr>\n\n            <tr><td><div class=\"divider\"></div></td></tr>\n\n            <!-- Summary & Details -->\n            <tr>\n              <td class=\"p pb-0\">\n                <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                  <tr>\n                    <td class=\"stack\" width=\"52%\" valign=\"top\" style=\"padding-right:12px;\">\n                      <p class=\"h2\">Summary</p>\n                      <p class=\"body\" style=\"margin:8px 0 0 0;\">\n                        {{ $json.data.outline.conclusion }}\n                      </p>\n                    </td>\n                    <td class=\"stack\" width=\"48%\" valign=\"top\" style=\"padding-left:12px;\">\n                      <p class=\"h2\">Details</p>\n                      <p class=\"caption\" style=\"margin:8px 0 0 0;\">\n                        \n                        Updated:\n                        {{ new Date($json.data.updatedAt || Date.now()).toLocaleString() }}<br>\n                        Tags:\n                        {{ Array.isArray($json.data.tags) && $json.data.tags.length ? $json.data.tags.join(', ') : '—' }}\n                      </p>\n                    </td>\n                  </tr>\n                </table>\n              </td>\n            </tr>\n\n            <tr><td style=\"height:18px; line-height:18px;\">&nbsp;</td></tr>\n            <tr><td><div class=\"divider\"></div></td></tr>\n\n            <!-- Outline -->\n            <tr>\n              <td class=\"p pb-0\">\n                <p class=\"h2\">Outline (preview)</p>\n                <p class=\"body\" style=\"margin:8px 0 0 0;\">\n                  {{ $json.data.outline.introduction }}\n                </p>\n              </td>\n            </tr>\n\n            <tr><td style=\"height:18px; line-height:18px;\">&nbsp;</td></tr>\n\n            <!-- CTAs -->\n            <tr>\n              <td class=\"p pt-0\">\n\n                <!-- Primary button with VML for Outlook -->\n                <!--[if mso]>\n                <v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\"\n                  href=\"{{ ('https://peaknorth-admin-blog-frontend.vercel.app/posts/' + $json.data.id) }}\"\n                  style=\"height:44px;v-text-anchor:middle;width:200px;\" arcsize=\"24%\" stroke=\"f\" fillcolor=\"#111316\">\n                  <w:anchorlock/>\n                  <center style=\"color:#ffffff;font-family:Segoe UI, Arial, sans-serif;font-size:14px;font-weight:700;\">\n                    Open in Review\n                  </center>\n                </v:roundrect>\n                <![endif]-->\n                <!--[if !mso]><!-- -->\n                <a\n                  class=\"btn\"\n                  href=\"{{('https://peaknorth-admin-blog-frontend.vercel.app/posts/' + $json.data.id) }}\"\n                  target=\"_blank\" rel=\"noopener\"\n                  >Open in Review</a>\n                <!--<![endif]-->\n              </td>\n            </tr>\n\n            <tr><td style=\"height:4px; line-height:4px;\">&nbsp;</td></tr>\n          </table>\n\n          <!-- Footer -->\n          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-top:16px;\">\n            <tr>\n              <td class=\"py text\" align=\"center\" style=\"padding-top:16px;\">\n                <p class=\"caption\" style=\"margin:0 0 10px 0;\">\n                  You’re receiving this because you’re a reviewer on the Blog Automation workflow.\n                  To change notifications, visit\n                  <a href=\"{{ 'https://peaknorth-admin-blog.vercel.app/api/v1/admin/settings/notifications' }}\" style=\"text-decoration:underline; color:#6a6f76;\">Notification Settings</a>.\n                </p>\n                <p class=\"caption\" style=\"margin:8px 0 0 0;\">\n                  © {{ new Date().getFullYear() }} PeakNorth Inc. •\n                  <a href=\"{{ 'https://peaknorth-admin-blog-frontend.vercel.app/' }}\" style=\"text-decoration:underline; color:#6a6f76;\">Website</a>\n                </p>\n              </td>\n            </tr>\n          </table>\n\n        </td>\n      </tr>\n    </table>\n  </div>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "id": "1cfbf9ac-9586-4429-9932-a7405f384fc6",
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        160,
+        112
+      ],
+      "webhookId": "cd46c59c-b7aa-40ab-b2c6-0357bcb39b55",
+      "retryOnFail": true,
+      "credentials": {
+        "smtp": {
+          "id": "j3KhWSo5z8yhNjgD",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/posts/{{ $('Create Post').item.json.data.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\":\"NEEDS_REVIEW\",\n  \"draft\":{\n    \"mdx\": {{ JSON.stringify($json.draft.mdx) }},\n  \"wordCount\": {{ $json.draft.wordCount }},\n  \"estimatedReadTime\": {{ $json.draft.estimatedReadTime }}\n  }\n\n}",
+        "options": {}
+      },
+      "id": "1d80aa39-5566-4b3e-8c8d-4b4aedd65f7b",
+      "name": "Save Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -64,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract draft content and calculate word count\nconst openaiResponse = $input.all()[0].json;\nconst draftContent = openaiResponse.choices[0].message.content;\n\n// Simple word count\nconst wordCount = draftContent.split(/\\s+/).length;\nconst estimatedReadTime = Math.ceil(wordCount / 200); // 200 words per minute\n\nreturn [{\n  json: {\n    draft: {\n    mdx: draftContent,\n    wordCount: wordCount,\n    estimatedReadTime: estimatedReadTime\n  }\n  }\n  \n}];"
+      },
+      "id": "b5c5bcb5-f4bd-460f-90a7-984fa8c1eabd",
+      "name": "Process Draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert blog writer. Write a complete, engaging blog post in MDX format based on the outline provided. Include proper headings, engaging content, and maintain a professional yet approachable tone. The post should be 1500-2500 words.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a blog post with this title: {{ $('Parse Outline').first().json.outline.title }}. Introduction: {{ $('Parse Outline').first().json.outline.introduction }}. Conclusion: {{ $('Parse Outline').first().json.outline.conclusion }}. Target persona: {{ $('Pick Blog Idea').first().json.data.persona }}.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "id": "87dd7200-8655-473c-9cdf-1676590c5d58",
+      "name": "Generate Draft (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -512,
+        -32
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "kYqByiDqNqJiPj3X",
+          "name": "Bearer Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/posts/{{ $('Create Post').item.json.data.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"outline\": {\n    \"title\": \"{{ $('Parse Outline').first().json.outline.title }}\",\n    \"introduction\": \"{{ $('Parse Outline').first().json.outline.introduction }}\",\n    \"sections\": {{ JSON.stringify($('Parse Outline').first().json.outline.sections) }},\n    \"conclusion\": \"{{ $('Parse Outline').first().json.outline.conclusion }}\",\n    \"callToAction\": \"{{ $('Parse Outline').first().json.outline.callToAction }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "467a01ed-f2c6-4255-8405-3468083cacf7",
+      "name": "Save Outline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -720,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse OpenAI response and extract outline\nconst openaiResponse = $input.all()[0].json;\nconst id = openaiResponse.id;\nconst outlineText = openaiResponse.choices[0].message.content;\n\ntry {\n  const outline = JSON.parse(outlineText);\n  return [{ json: { id,outline } }];\n} catch (error) {\n  console.error('Failed to parse outline JSON:', error);\n  // Fallback outline\n  return [{\n    json: {\n      \n      outline: {\n        title:\"$node['Pick Blog Idea'].json.topic\",\n        introduction: \"Introduction to be written\",\n        sections: [\n          {\n            heading: \"Main Section\",\n            subPoints: [\"Point 1\", \"Point 2\", \"Point 3\"]\n          }\n        ],\n        conclusion: \"Conclusion to be written\",\n        callToAction: \"Call to action to be written\"\n      }\n    }\n  }];\n}"
+      },
+      "id": "e15c2398-c910-4f1a-96eb-74e0c2a85b1d",
+      "name": "Parse Outline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4.1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert blog outline architect for a SaaS/tech site. Create detailed, SEO-optimized outlines designed to expand into 1,200–1,800 word blogs (guides, comparisons). Follow these rules:\\n\\n1) Structure & Length\\n- Target 6–8 main sections (H2-level), each with 3–5 actionable subpoints.\\n- Ensure the total outline supports 1,200–1,800 words when expanded (roughly 150–250 words per section).\\n\\n2) Audience & Intent\\n- Tailor to the specified persona and search intent/goal.\\n- Balance breadth (covering key aspects) and depth (specific frameworks, comparisons, or examples).\\n\\n3) Depth & Evidence\\n- Each section must include actionable steps, examples, or comparisons.\\n- Suggest visuals (tables, diagrams, charts, code snippets) where they clarify ideas.\\n- Flag any data/statistic as \\\"TBD\\\" if source unknown.\\n\\n4) SEO & Readability\\n- Provide a strong, keyword-aligned title and intro.\\n- Suggest 5–12 primary keywords and 3–5 long-tail variations.\\n- Include 2–3 FAQ questions (aligned with People-Also-Ask queries).\\n- Keep sections scannable, skimmable, and H2/H3-ready.\\n\\n5) Brand & Style\\n- Tone: helpful, concise, authoritative.\\n- Avoid filler, clichés, or vague generalizations.\\n- Use active voice, direct explanations.\\n\\n6) Output Format\\nReturn ONLY valid JSON with this schema:\\n{\\n  \\\"title\\\": \\\"...\\\",\\n  \\\"introduction\\\": \\\"...\\\",\\n  \\\"sections\\\": [\\n    {\\n      \\\"heading\\\": \\\"...\\\",\\n      \\\"purpose\\\": \\\"...\\\",\\n      \\\"subPoints\\\": [\\\"...\\\", \\\"...\\\"],\\n      \\\"examplesOrFrameworks\\\": [\\\"...\\\"],\\n      \\\"visualSuggestions\\\": [\\\"...\\\"]\\n    }\\n  ],\\n  \\\"faq\\\": [\\n    {\\\"question\\\": \\\"...\\\", \\\"shortAnswer\\\": \\\"...\\\"}\\n  ],\\n  \\\"conclusion\\\": \\\"...\\\",\\n  \\\"callToAction\\\": \\\"...\\\",\\n  \\\"seo\\\": {\\n    \\\"searchIntent\\\": \\\"informational | commercial | transactional | navigational\\\",\\n    \\\"primaryKeyword\\\": \\\"...\\\",\\n    \\\"secondaryKeywords\\\": [\\\"...\\\"],\\n    \\\"longTails\\\": [\\\"...\\\"],\\n    \\\"metaTitle\\\": \\\"...\\\",\\n    \\\"metaDescription\\\": \\\"...\\\",\\n    \\\"slug\\\": \\\"...\\\"\\n  },\\n  \\\"interlinking\\\": {\\n    \\\"internalLinks\\\": [\\n      {\\\"anchor\\\": \\\"...\\\", \\\"target\\\": \\\"...\\\", \\\"reason\\\": \\\"...\\\"}\\n    ],\\n    \\\"externalCitationsNeeded\\\": [\\\"...\\\"]\\n  },\\n  \\\"notesForWriter\\\": [\\\"...\\\"]\\n} Return only valid JSON with this structure: {\\\"title\\\": \\\"...\\\", \\\"introduction\\\": \\\"...\\\", \\\"sections\\\": [{\\\"heading\\\": \\\"...\\\", \\\"subPoints\\\": [\\\"...\\\"]}], \\\"conclusion\\\": \\\"...\\\", \\\"callToAction\\\": \\\"...\\\"}\"\n    },\n    {\n  \"role\": \"user\",\n  \"content\": \"Topic:{{ $json.data.brief.topic }} \\nPersona: {{ $json.data.brief.persona }}\\nGoal:{{ $json.data.brief.goal }} \"\n}\n\n  ],\n  \"temperature\": 0.34\n}",
+        "options": {}
+      },
+      "id": "e2853a1c-0093-4a9c-9d8b-9889eb358da2",
+      "name": "Generate Outline (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -1168,
+        -32
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "kYqByiDqNqJiPj3X",
+          "name": "Bearer Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"BRIEF\",\n  \"brief\": {\n    \"topic\": \"{{ $('Pick Blog Idea').item.json.data.topic }}\",\n    \"persona\": \"{{ $('Pick Blog Idea').item.json.data.persona }}\",\n    \"goal\": \"{{ $('Pick Blog Idea').item.json.data.goal }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "e45dee3c-d1ca-41be-a3b8-2324a5762398",
+      "name": "Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -1392,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6xZ6S3AAn35GB3Vy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -62,204 +527,256 @@
         },
         "options": {}
       },
-      "id": "check-idea-available",
+      "id": "32163ea8-871b-4fb5-914d-8acefb68d8c2",
       "name": "Check Idea Available",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 300]
+      "position": [
+        -1616,
+        80
+      ]
     },
     {
       "parameters": {
-        "url": "=http://localhost:3001/api/v1/posts",
+        "url": "=https://peaknorth-admin-blog.vercel.app/api/v1/ideas/pick",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"status\": \"BRIEF\",\n  \"brief\": {\n    \"topic\": \"{{$node['Pick Blog Idea'].json.topic}}\",\n    \"persona\": \"{{$node['Pick Blog Idea'].json.persona}}\",\n    \"goal\": \"{{$node['Pick Blog Idea'].json.goal}}\"\n  }\n}",
+        "genericAuthType": "=",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTg3MWJlOS02NjZlLTRmMGMtODg3Mi0yODEzN2RmYjkxNDQiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU2OTEwNzI4fQ.vF1hDEXovLa78GAutkLnEzA8FSLJuMMM19fwsSDLovQ"
+            }
+          ]
+        },
         "options": {}
       },
-      "id": "create-post",
-      "name": "Create Post",
+      "id": "2dbf0b9b-fd14-4529-b60e-ccd8037f22cd",
+      "name": "Pick Blog Idea",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [900, 200],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "n8n-api-key",
-          "name": "N8N API Key"
-        }
-      }
+      "position": [
+        -1840,
+        128
+      ]
     },
     {
       "parameters": {
-        "url": "https://api.openai.com/v1/chat/completions",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a blog outline creator. Create a detailed outline for a blog post based on the given brief. Return only valid JSON with this structure: {\\\"title\\\": \\\"...\\\", \\\"introduction\\\": \\\"...\\\", \\\"sections\\\": [{\\\"heading\\\": \\\"...\\\", \\\"subPoints\\\": [\\\"...\\\"]}], \\\"conclusion\\\": \\\"...\\\", \\\"callToAction\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Topic: {{$node['Pick Blog Idea'].json.topic}}\\nPersona: {{$node['Pick Blog Idea'].json.persona}}\\nGoal: {{$node['Pick Blog Idea'].json.goal}}\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
-        "options": {}
-      },
-      "id": "generate-outline",
-      "name": "Generate Outline (OpenAI)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1120, 200],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "openai-api-key",
-          "name": "OpenAI API Key"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Parse OpenAI response and extract outline\nconst openaiResponse = $input.all()[0].json;\nconst outlineText = openaiResponse.choices[0].message.content;\n\ntry {\n  const outline = JSON.parse(outlineText);\n  return [{ json: { outline } }];\n} catch (error) {\n  console.error('Failed to parse outline JSON:', error);\n  // Fallback outline\n  return [{\n    json: {\n      outline: {\n        title: $node['Pick Blog Idea'].json.topic,\n        introduction: \"Introduction to be written\",\n        sections: [\n          {\n            heading: \"Main Section\",\n            subPoints: [\"Point 1\", \"Point 2\", \"Point 3\"]\n          }\n        ],\n        conclusion: \"Conclusion to be written\",\n        callToAction: \"Call to action to be written\"\n      }\n    }\n  }];\n}"
-      },
-      "id": "parse-outline",
-      "name": "Parse Outline",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1340, 200]
-    },
-    {
-      "parameters": {
-        "url": "=http://localhost:3001/api/v1/posts/{{$node['Create Post'].json.data.id}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"outline\": {{$node['Parse Outline'].json.outline}}\n}",
-        "options": {
-          "httpMethod": "PUT"
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyHour",
+              "minute": 59
+            }
+          ]
         }
       },
-      "id": "save-outline",
-      "name": "Save Outline",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1560, 200],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "n8n-api-key",
-          "name": "N8N API Key"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "url": "https://api.openai.com/v1/chat/completions",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert blog writer. Write a complete, engaging blog post in MDX format based on the outline provided. Include proper headings, engaging content, code examples where relevant, and maintain a professional yet approachable tone. The post should be 1500-2500 words.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a blog post based on this outline:\\n\\nTitle: {{$node['Parse Outline'].json.outline.title}}\\nIntroduction: {{$node['Parse Outline'].json.outline.introduction}}\\nSections: {{JSON.stringify($node['Parse Outline'].json.outline.sections)}}\\nConclusion: {{$node['Parse Outline'].json.outline.conclusion}}\\nCall to Action: {{$node['Parse Outline'].json.outline.callToAction}}\\n\\nTarget Persona: {{$node['Pick Blog Idea'].json.persona}}\\nGoal: {{$node['Pick Blog Idea'].json.goal}}\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
-        "options": {}
-      },
-      "id": "generate-draft",
-      "name": "Generate Draft (OpenAI)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1780, 200],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "openai-api-key",
-          "name": "OpenAI API Key"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Extract draft content and calculate word count\nconst openaiResponse = $input.all()[0].json;\nconst draftContent = openaiResponse.choices[0].message.content;\n\n// Simple word count\nconst wordCount = draftContent.split(/\\s+/).length;\nconst estimatedReadTime = Math.ceil(wordCount / 200); // 200 words per minute\n\nreturn [{\n  json: {\n    draft_mdx: draftContent,\n    wordCount: wordCount,\n    estimatedReadTime: estimatedReadTime\n  }\n}];"
-      },
-      "id": "process-draft",
-      "name": "Process Draft",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [2000, 200]
-    },
-    {
-      "parameters": {
-        "url": "=http://localhost:3001/api/v1/posts/{{$node['Create Post'].json.data.id}}/status",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"status\": \"NEEDS_REVIEW\",\n  \"patch\": {\n    \"draft_mdx\": {{JSON.stringify($node['Process Draft'].json.draft_mdx)}},\n    \"wordCount\": {{$node['Process Draft'].json.wordCount}},\n    \"estimatedReadTime\": {{$node['Process Draft'].json.estimatedReadTime}}\n  }\n}",
-        "options": {}
-      },
-      "id": "save-draft",
-      "name": "Save Draft",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [2220, 200],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "n8n-api-key",
-          "name": "N8N API Key"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "fromEmail": "noreply@peaknorth.com",
-        "toEmail": "admin@peaknorth.com",
-        "subject": "New Blog Post Ready for Review",
-        "emailType": "html",
-        "message": "=<h2>New Blog Post Created</h2>\n<p>A new blog post has been created and is ready for your review:</p>\n<ul>\n  <li><strong>Title:</strong> {{$node['Parse Outline'].json.outline.title}}</li>\n  <li><strong>Scheduled:</strong> {{new Date($node['Create Post'].json.data.scheduledAt).toLocaleString('en-US', {timeZone: 'America/Toronto'})}}</li>\n  <li><strong>Word Count:</strong> {{$node['Process Draft'].json.wordCount}}</li>\n  <li><strong>Estimated Read Time:</strong> {{$node['Process Draft'].json.estimatedReadTime}} minutes</li>\n</ul>\n<p><a href=\"{{$env.FRONTEND_URL}}/posts/{{$node['Create Post'].json.data.id}}\" style=\"background-color: #3B82F6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Review Post →</a></p>",
-        "options": {}
-      },
-      "id": "send-notification",
-      "name": "Send Notification",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2,
-      "position": [2440, 200],
-      "credentials": {
-        "smtp": {
-          "id": "smtp-credentials",
-          "name": "SMTP"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "fromEmail": "noreply@peaknorth.com",
-        "toEmail": "admin@peaknorth.com",
-        "subject": "No Blog Ideas Available - Add More Ideas",
-        "emailType": "text",
-        "message": "No unused blog ideas are available in the system. Please add more ideas to continue the automated blog creation process.\n\nAdd ideas at: {{$env.FRONTEND_URL}}/ideas",
-        "options": {}
-      },
-      "id": "send-reminder",
-      "name": "Send Reminder to Add Ideas",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2,
-      "position": [900, 400],
-      "credentials": {
-        "smtp": {
-          "id": "smtp-credentials",
-          "name": "SMTP"
-        }
-      }
+      "id": "22a8ebb3-5b4c-4671-b0b1-7790076fdf14",
+      "name": "Every day",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        128
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "Every 2 Days at 10:00": {
+    "Check Pending Posts": {
       "main": [
         [
           {
-            "node": "Pick Blog Idea",
+            "node": "Send Pending Reminder",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pick Blog Idea": {
+    "Get Publishing Stats": {
       "main": [
         [
           {
-            "node": "Check Idea Available",
+            "node": "Check Pending Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Post": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render HTML": {
+      "main": [
+        [
+          {
+            "node": "Publish Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save SEO": {
+      "main": [
+        [
+          {
+            "node": "Render HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse SEO": {
+      "main": [
+        [
+          {
+            "node": "Save SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate SEO (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Parse SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Generate SEO (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Posts Available": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Publishing Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ready Posts": {
+      "main": [
+        [
+          {
+            "node": "Check Posts Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 15 Minutes": {
+      "main": [
+        []
+      ]
+    },
+    "Save Draft": {
+      "main": [
+        [
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Draft": {
+      "main": [
+        [
+          {
+            "node": "Save Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Draft (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Process Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Outline": {
+      "main": [
+        [
+          {
+            "node": "Generate Draft (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Outline": {
+      "main": [
+        [
+          {
+            "node": "Save Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Outline (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Parse Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Post": {
+      "main": [
+        [
+          {
+            "node": "Generate Outline (OpenAI)",
             "type": "main",
             "index": 0
           }
@@ -284,77 +801,27 @@
         ]
       ]
     },
-    "Create Post": {
+    "Pick Blog Idea": {
       "main": [
         [
           {
-            "node": "Generate Outline (OpenAI)",
+            "node": "Check Idea Available",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Generate Outline (OpenAI)": {
+    "Send Notification": {
       "main": [
-        [
-          {
-            "node": "Parse Outline",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
-    "Parse Outline": {
+    "Every day": {
       "main": [
         [
           {
-            "node": "Save Outline",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Outline": {
-      "main": [
-        [
-          {
-            "node": "Generate Draft (OpenAI)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Draft (OpenAI)": {
-      "main": [
-        [
-          {
-            "node": "Process Draft",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process Draft": {
-      "main": [
-        [
-          {
-            "node": "Save Draft",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Draft": {
-      "main": [
-        [
-          {
-            "node": "Send Notification",
+            "node": "Pick Blog Idea",
             "type": "main",
             "index": 0
           }
@@ -362,19 +829,17 @@
       ]
     }
   },
+  "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
   },
-  "staticData": null,
-  "tags": [
-    {
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z",
-      "id": "blog-automation",
-      "name": "blog-automation"
-    }
-  ],
-  "triggerCount": 1,
-  "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "1"
+  "versionId": "83b8b13a-ec4b-4520-9be5-9ee29b63c232",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a21b2ee827839b016c14ca982a6067c14f34f50ae3e8ae47f04b6e94d2085ca"
+  },
+  "id": "IqEBev5r4c8ZgExV",
+  "tags": []
 }
