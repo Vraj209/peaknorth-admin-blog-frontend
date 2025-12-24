@@ -5,7 +5,8 @@ export type PostStatus =
   | 'NEEDS_REVIEW' 
   | 'APPROVED' 
   | 'SCHEDULED' 
-  | 'PUBLISHED';
+  | 'PUBLISHED'
+  | 'REGENRATE';
 
 export interface PostBrief {
   goal: string;

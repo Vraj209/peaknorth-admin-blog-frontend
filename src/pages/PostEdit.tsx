@@ -8,6 +8,7 @@ import {
   ExternalLink,
   RefreshCw,
   FileText,
+  RotateCcw,
 } from "lucide-react";
 import { HybridFirestoreService } from "../lib/hybrid-firestore";
 import { formatScheduledTime, getTimeUntilPublish } from "../lib/scheduling";
@@ -105,6 +106,52 @@ export function PostEdit() {
     await updatePostStatus(status);
   };
 
+  // Trigger N8N webhook directly for regeneration
+  const handleRegenerate = async () => {
+    if (!post) return;
+
+    setUpdating(true);
+    setStatusAction('REGENRATE');
+
+    try {
+      // Update status to REGENRATE first
+      await updatePostStatus('REGENRATE' as PostStatus);
+
+      // Trigger N8N webhook directly
+      const n8nWebhookUrl = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL;
+      
+      if (n8nWebhookUrl) {
+        const webhookResponse = await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            event: 'post.regenerate',
+            postId: post.id,
+            post: post,
+            timestamp: Date.now(),
+          }),
+        });
+
+        if (!webhookResponse.ok) {
+          console.error('N8N webhook failed:', webhookResponse.status);
+        } else {
+          console.log('N8N webhook triggered successfully');
+        }
+      } else {
+        console.warn('N8N webhook URL not configured');
+      }
+
+    } catch (error) {
+      console.error('Error triggering regeneration:', error);
+      alert(`Failed to trigger regeneration: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setUpdating(false);
+      setStatusAction(null);
+    }
+  };
+
   const renderMarkdown = (markdown: string): string => {
     // Simple markdown rendering - convert basic markdown to HTML
     return markdown
@@ -131,13 +178,14 @@ export function PostEdit() {
         return "bg-orange-500 text-white";
       case "DRAFT":
         return "bg-yellow-500 text-white";
+      case "REGENRATE":
       default:
         return "bg-gray-500 text-white";
     }
   };
 
   const canApprove = post && ["DRAFT", "NEEDS_REVIEW"].includes(post.status);
-  const canReject = post && post.status === "NEEDS_REVIEW";
+  const canReject = post && ["DRAFT", "NEEDS_REVIEW", "REGENRATE"].includes(post.status);
 
   if (loading) {
     return (
@@ -203,16 +251,16 @@ export function PostEdit() {
 
           {canReject && (
             <button
-              onClick={() => updatePostStatus("DRAFT")}
+              onClick={() => updatePostStatus("REGENRATE")}
               disabled={updating}
               className="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 border border-gray-300 text-xs lg:text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
               {updating ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
-                <AlertTriangle className="h-4 w-4" />
+                <RotateCcw className="h-4 w-4" />
               )}
-              Request Changes
+              Regenerate Draft
             </button>
           )}
 
@@ -507,18 +555,18 @@ export function PostEdit() {
                         </span>
                       </button>
                       <button
-                        onClick={() => handleStatusUpdate('DRAFT')}
+                        onClick={handleRegenerate}
                         disabled={updating}
                         className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                       >
-                        {updating && statusAction === 'DRAFT' && (
+                        {updating && statusAction === 'REGENRATE' && (
                           <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                         )}
                         <span>
-                          {updating && statusAction === 'DRAFT' ? 'Rejecting...' : 'Request Changes'}
+                          {updating && statusAction === 'REGENRATE' ? 'Regenerating...' : 'Regenerate'}
                         </span>
                       </button>
                     </div>
@@ -559,6 +607,29 @@ export function PostEdit() {
                         {updating && statusAction === 'APPROVED' ? 'Approving...' : 'Approve for SEO Scheduling'}
                       </span>
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {post.status === 'REGENRATE' && (
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 lg:p-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-start gap-2 lg:gap-3">
+                      <div className="flex-shrink-0">
+                        <svg className="h-4 w-4 lg:h-5 lg:w-5 text-red-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs lg:text-sm font-medium text-red-800">
+                          Draft Regenerated
+                        </h4>
+                        <p className="text-xs lg:text-sm text-red-700 mt-0.5">
+                          This draft has been regenerated and needs to be reviewed.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
