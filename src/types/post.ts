@@ -6,6 +6,7 @@ export type PostStatus =
   | 'APPROVED' 
   | 'SCHEDULED' 
   | 'PUBLISHED'
+  | 'UNPUBLISHED'
   | 'REGENRATE';
 
 export interface PostBrief {

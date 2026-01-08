@@ -170,6 +170,8 @@ export function PostEdit() {
     switch (status) {
       case "PUBLISHED":
         return "bg-green-500 text-white";
+      case "UNPUBLISHED":
+        return "bg-gray-600 text-white";
       case "APPROVED":
         return "bg-blue-500 text-white";
       case "SCHEDULED":
@@ -186,6 +188,8 @@ export function PostEdit() {
 
   const canApprove = post && ["DRAFT", "NEEDS_REVIEW"].includes(post.status);
   const canReject = post && ["DRAFT", "NEEDS_REVIEW", "REGENRATE"].includes(post.status);
+  const canUnpublish = post && post.status === "PUBLISHED";
+  const canRepublish = post && post.status === "UNPUBLISHED";
 
   if (loading) {
     return (
@@ -230,7 +234,7 @@ export function PostEdit() {
                 {post.status.replace("_", " ")}
               </span>
               <span className="text-xs lg:text-sm text-gray-500">
-                Created {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
+                Created {post.createdAt ? new Date(post.createdAt.getTime()).toLocaleDateString() : 'N/A'}
               </span>
             </div>
           </div>
@@ -247,6 +251,36 @@ export function PostEdit() {
               <ExternalLink className="h-4 w-4" />
               View Live
             </a>
+          )}
+
+          {canUnpublish && (
+            <button
+              onClick={() => updatePostStatus("UNPUBLISHED")}
+              disabled={updating}
+              className="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 border border-red-300 text-xs lg:text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 transition-colors"
+            >
+              {updating && statusAction === 'UNPUBLISHED' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" />
+              )}
+              Unpublish
+            </button>
+          )}
+
+          {canRepublish && (
+            <button
+              onClick={() => updatePostStatus("PUBLISHED")}
+              disabled={updating}
+              className="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {updating && statusAction === 'PUBLISHED' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              Republish
+            </button>
           )}
 
           {canReject && (
@@ -612,7 +646,6 @@ export function PostEdit() {
               )}
 
               {post.status === 'REGENRATE' && (
-
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 lg:p-4">
                   <div className="flex flex-col gap-3">
                     <div className="flex items-start gap-2 lg:gap-3">
@@ -630,6 +663,43 @@ export function PostEdit() {
                         </p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {post.status === 'UNPUBLISHED' && (
+                <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 lg:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start gap-2 lg:gap-3 flex-1">
+                      <div className="flex-shrink-0">
+                        <svg className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs lg:text-sm font-medium text-gray-800">
+                          Post Unpublished
+                        </h4>
+                        <p className="text-xs lg:text-sm text-gray-600 mt-0.5">
+                          This post has been unpublished and is no longer visible to the public.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleStatusUpdate('PUBLISHED')}
+                      disabled={updating}
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                    >
+                      {updating && statusAction === 'PUBLISHED' && (
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      )}
+                      <span>
+                        {updating && statusAction === 'PUBLISHED' ? 'Republishing...' : 'Republish'}
+                      </span>
+                    </button>
                   </div>
                 </div>
               )}
