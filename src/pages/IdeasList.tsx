@@ -383,7 +383,7 @@ export function IdeasList() {
                       </div>
                     )}
                     <p className="text-xs text-gray-500 text-left">
-                      Added {new Date(idea.createdAt).toLocaleDateString()}
+                      Added {idea.createdAt ? new Date(idea.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
 
