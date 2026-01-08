@@ -7,8 +7,7 @@ import {
   updateDoc, 
   query, 
   where, 
-  orderBy,
-  Timestamp
+  orderBy
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BlogPost, PostStatus } from '../types/post';

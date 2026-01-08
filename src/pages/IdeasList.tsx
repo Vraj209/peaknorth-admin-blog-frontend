@@ -3,8 +3,7 @@ import {
   Plus,
   Lightbulb,
   Trash2,
-  CheckCircle,
-  AlertCircle,
+  CheckCircle
 } from "lucide-react";
 import { FirestoreService } from "../lib/firestore";
 import type { BlogIdea } from "../types/post";

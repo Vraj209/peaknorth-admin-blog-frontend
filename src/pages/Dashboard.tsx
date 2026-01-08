@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 import {
   FileText,
   Clock,
-  CheckCircle,
-  AlertTriangle,
   Calendar,
-  FileEdit,
   Lightbulb,
   ArrowRight,
 } from "lucide-react";
