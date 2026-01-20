@@ -3,10 +3,10 @@ import {
   Plus,
   Lightbulb,
   Trash2,
-  CheckCircle
+  Filter
 } from "lucide-react";
 import { FirestoreService } from "../lib/firestore";
-import type { BlogIdea } from "../types/post";
+import type { BlogIdea, IdeaStatus } from "../types/post";
 
 interface NewIdeaForm {
   topic: string;
@@ -32,6 +32,7 @@ export function IdeasList() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<NewIdeaForm>(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<IdeaStatus | 'ALL'>('ALL');
 
   useEffect(() => {
     loadIdeas();
@@ -54,12 +55,11 @@ export function IdeasList() {
 
     try {
       const ideaData = {
+        status: 'UNUSED' as IdeaStatus,
         topic: formData.topic,
         persona: formData.persona,
         goal: formData.goal,
-        targetAudience: formData.targetAudience ? 
-        formData.targetAudience.split(",").map((audience) => audience.trim())
-         : undefined,
+        targetAudience: formData.targetAudience || undefined,
         priority: formData.priority,
         tags: formData.tags
           ? formData.tags
@@ -107,8 +107,40 @@ export function IdeasList() {
     }
   };
 
-  const unusedIdeas = ideas.filter((idea) => !idea.used);
-  const usedIdeas = ideas.filter((idea) => idea.used);
+  const getStatusColor = (status: IdeaStatus) => {
+    switch (status) {
+      case "UNUSED":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "PROCESSING":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "USED":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const getStatusLabel = (status: IdeaStatus) => {
+    switch (status) {
+      case "UNUSED":
+        return "Available";
+      case "PROCESSING":
+        return "In Progress";
+      case "USED":
+        return "Used";
+      default:
+        return status;
+    }
+  };
+
+  const filteredIdeas = ideas.filter((idea) => {
+    if (statusFilter === 'ALL') return true;
+    return idea.status === statusFilter;
+  });
+
+  const unusedCount = ideas.filter((idea) => idea.status === 'UNUSED').length;
+  const processingCount = ideas.filter((idea) => idea.status === 'PROCESSING').length;
+  const usedCount = ideas.filter((idea) => idea.status === 'USED').length;
 
   if (loading) {
     return (
@@ -299,48 +331,99 @@ export function IdeasList() {
       <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-3">
         <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
           <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
-            Available Ideas
+            Available
           </p>
-          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
-            {unusedIdeas.length}
-          </p>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
-          <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
-            Used Ideas
-          </p>
-          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
-            {usedIdeas.length}
+          <p className="text-2xl lg:text-3xl font-bold text-blue-600">
+            {unusedCount}
           </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
           <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
-            High Priority
+            In Progress
           </p>
-          <p className="text-2xl lg:text-3xl font-bold text-gray-900">
-            {
-              unusedIdeas.filter((idea) => idea.priority === "high")
-                .length
-            }
+          <p className="text-2xl lg:text-3xl font-bold text-yellow-600">
+            {processingCount}
+          </p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <p className="text-xs lg:text-sm font-medium text-gray-600 mb-2">
+            Used
+          </p>
+          <p className="text-2xl lg:text-3xl font-bold text-green-600">
+            {usedCount}
           </p>
         </div>
       </div>
 
-      {/* Available Ideas */}
-      {unusedIdeas.length > 0 && (
+      {/* Filter */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setStatusFilter('ALL')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                statusFilter === 'ALL'
+                  ? 'bg-black text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All ({ideas.length})
+            </button>
+            <button
+              onClick={() => setStatusFilter('UNUSED')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                statusFilter === 'UNUSED'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              }`}
+            >
+              Available ({unusedCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('PROCESSING')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                statusFilter === 'PROCESSING'
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+              }`}
+            >
+              In Progress ({processingCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('USED')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                statusFilter === 'USED'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+              }`}
+            >
+              Used ({usedCount})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Ideas List */}
+      {filteredIdeas.length > 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
             <h2 className="text-base lg:text-lg font-semibold text-gray-900">
-              Available Ideas
+              {statusFilter === 'ALL' ? 'All Ideas' : 
+               statusFilter === 'UNUSED' ? 'Available Ideas' :
+               statusFilter === 'PROCESSING' ? 'Ideas In Progress' : 'Used Ideas'}
             </h2>
             <p className="text-xs lg:text-sm text-gray-600 mt-0.5">
-              These ideas are ready to be used by the automation workflow
+              {filteredIdeas.length} {filteredIdeas.length === 1 ? 'idea' : 'ideas'} found
             </p>
           </div>
           <div className="divide-y divide-gray-200">
-            {unusedIdeas.map((idea) => (
+            {filteredIdeas.map((idea) => (
               <div key={idea.id} className="p-4 lg:p-6 text-left">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0 space-y-2">
@@ -348,6 +431,13 @@ export function IdeasList() {
                       <h3 className="text-sm lg:text-base font-semibold text-gray-900">
                         {idea.topic}
                       </h3>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${getStatusColor(
+                          idea.status
+                        )}`}
+                      >
+                        {getStatusLabel(idea.status)}
+                      </span>
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${getPriorityColor(
                           idea.priority
@@ -366,7 +456,7 @@ export function IdeasList() {
                     {idea.targetAudience && (
                       <p className="text-xs lg:text-sm text-gray-600 text-left">
                         <span className="font-medium">Target Audience:</span>{" "}
-                        {idea.targetAudience.join(", ")}
+                        {idea.targetAudience}
                       </p>
                     )}
 
@@ -399,39 +489,7 @@ export function IdeasList() {
             ))}
           </div>
         </div>
-      )}
-
-      {/* Used Ideas */}
-      {usedIdeas.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
-            <h2 className="text-base lg:text-lg font-semibold text-gray-900">Used Ideas</h2>
-            <p className="text-xs lg:text-sm text-gray-600 mt-0.5">
-              These ideas have been turned into blog posts
-            </p>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {usedIdeas.map((idea) => (
-              <div key={idea.id} className="p-4 lg:p-6 bg-gray-50 text-left">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm lg:text-base font-medium text-gray-600">
-                        {idea.topic}
-                      </h3>
-                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    </div>
-                    <p className="text-xs lg:text-sm text-gray-500 text-left">{idea.persona}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {ideas.length === 0 && (
+      ) : ideas.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-8 lg:p-12 text-center">
           <Lightbulb className="mx-auto h-10 w-10 lg:h-12 lg:w-12 text-gray-400" />
           <h3 className="mt-3 text-sm lg:text-base font-medium text-gray-900">
@@ -446,7 +504,25 @@ export function IdeasList() {
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add your first idea
+              Add Your First Idea
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-lg p-8 lg:p-12 text-center">
+          <Filter className="mx-auto h-10 w-10 lg:h-12 lg:w-12 text-gray-400" />
+          <h3 className="mt-3 text-sm lg:text-base font-medium text-gray-900">
+            No ideas found
+          </h3>
+          <p className="mt-1 text-xs lg:text-sm text-gray-500">
+            No ideas match the selected filter. Try a different filter.
+          </p>
+          <div className="mt-6">
+            <button
+              onClick={() => setStatusFilter('ALL')}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors"
+            >
+              Show All Ideas
             </button>
           </div>
         </div>

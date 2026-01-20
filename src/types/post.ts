@@ -9,6 +9,8 @@ export type PostStatus =
   | 'UNPUBLISHED'
   | 'REGENRATE';
 
+export type IdeaStatus = 'UNUSED' | 'PROCESSING' | 'USED';
+
 export interface PostBrief {
   goal: string;
   keyPoints: string[];
@@ -93,12 +95,13 @@ export interface CadenceConfig {
 
 export interface BlogIdea {
   id: string;
+  status: IdeaStatus;
   topic: string;
   persona: string;
   goal: string;
-  targetAudience?: string[];
+  targetAudience?: string;
   priority: 'low' | 'medium' | 'high';
-  used: boolean;
   createdAt: Date;
   tags?: string[];
+  notes?: string;
 }
