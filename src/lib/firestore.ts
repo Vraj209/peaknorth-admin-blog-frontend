@@ -18,6 +18,38 @@ const POSTS_COLLECTION = 'posts';
 const IDEAS_COLLECTION = 'ideas';
 const SETTINGS_COLLECTION = 'settings';
 
+// Helper function to convert Firestore timestamps to Date objects
+function convertFirestoreTimestamps(data: any): any {
+  const converted: any = { ...data };
+  
+  // Convert timestamp fields to Date objects
+  if (data.createdAt && data.createdAt.toDate) {
+    converted.createdAt = data.createdAt.toDate();
+  } else if (data.createdAt) {
+    converted.createdAt = new Date(data.createdAt);
+  }
+  
+  if (data.updatedAt && data.updatedAt.toDate) {
+    converted.updatedAt = data.updatedAt.toDate();
+  } else if (data.updatedAt) {
+    converted.updatedAt = new Date(data.updatedAt);
+  }
+  
+  if (data.scheduledAt && data.scheduledAt.toDate) {
+    converted.scheduledAt = data.scheduledAt.toDate();
+  } else if (data.scheduledAt && typeof data.scheduledAt !== 'object') {
+    converted.scheduledAt = new Date(data.scheduledAt);
+  }
+  
+  if (data.publishedAt && data.publishedAt.toDate) {
+    converted.publishedAt = data.publishedAt.toDate();
+  } else if (data.publishedAt && typeof data.publishedAt !== 'object') {
+    converted.publishedAt = new Date(data.publishedAt);
+  }
+  
+  return converted;
+}
+
 export class FirestoreService {
   // Posts CRUD
   static async createPost(postData: Partial<BlogPost>): Promise<string> {
@@ -44,7 +76,8 @@ export class FirestoreService {
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+      const data = convertFirestoreTimestamps(docSnap.data());
+      return { id: docSnap.id, ...data } as BlogPost;
     }
     return null;
   }
@@ -77,10 +110,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   static async getPostsByStatus(status: PostStatus): Promise<BlogPost[]> {
@@ -91,10 +127,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   static async getPublishReadyPosts(): Promise<BlogPost[]> {
@@ -106,10 +145,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   static async getRecentPosts(limitCount: number = 10): Promise<BlogPost[]> {
@@ -120,10 +162,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   // Ideas CRUD
@@ -147,10 +192,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogIdea));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogIdea;
+    });
   }
 
   static async markIdeaAsUsed(id: string): Promise<void> {
@@ -165,10 +213,13 @@ export class FirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogIdea));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogIdea;
+    });
   }
 
   static async deleteIdea(id: string): Promise<void> {

@@ -287,7 +287,7 @@ export function PostsList() {
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3 lg:h-4 lg:w-4" />
                       <span className="hidden sm:inline">Created </span>
-                      {new Date(post.createdAt?.getTime?.() ?? 0).toLocaleDateString()}
+                      {post.createdAt ? new Date(post.createdAt.getTime()).toLocaleDateString() : 'N/A'}
                     </div>
 
                     {post.scheduledAt && (
@@ -302,7 +302,7 @@ export function PostsList() {
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-3 w-3 lg:h-4 lg:w-4" />
                         <span className="hidden sm:inline">Published </span>
-                        {new Date(post.publishedAt).toLocaleDateString()}
+                        {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'N/A'}
                       </div>
                     )}
 

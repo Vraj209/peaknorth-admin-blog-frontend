@@ -17,6 +17,38 @@ import { FirestoreService } from './firestore';
 const POSTS_COLLECTION = 'posts';
 const AUTOMATION_POSTS_COLLECTION = 'automation_posts'; // New collection for automation posts
 
+// Helper function to convert Firestore timestamps to Date objects
+function convertFirestoreTimestamps(data: any): any {
+  const converted: any = { ...data };
+  
+  // Convert timestamp fields to Date objects
+  if (data.createdAt && data.createdAt.toDate) {
+    converted.createdAt = data.createdAt.toDate();
+  } else if (data.createdAt) {
+    converted.createdAt = new Date(data.createdAt);
+  }
+  
+  if (data.updatedAt && data.updatedAt.toDate) {
+    converted.updatedAt = data.updatedAt.toDate();
+  } else if (data.updatedAt) {
+    converted.updatedAt = new Date(data.updatedAt);
+  }
+  
+  if (data.scheduledAt && data.scheduledAt.toDate) {
+    converted.scheduledAt = data.scheduledAt.toDate();
+  } else if (data.scheduledAt && typeof data.scheduledAt !== 'object') {
+    converted.scheduledAt = new Date(data.scheduledAt);
+  }
+  
+  if (data.publishedAt && data.publishedAt.toDate) {
+    converted.publishedAt = data.publishedAt.toDate();
+  } else if (data.publishedAt && typeof data.publishedAt !== 'object') {
+    converted.publishedAt = new Date(data.publishedAt);
+  }
+  
+  return converted;
+}
+
 export class HybridFirestoreService {
   // Get all posts from both collections
   static async getAllPosts(): Promise<BlogPost[]> {
@@ -47,11 +79,12 @@ export class HybridFirestoreService {
     
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
+      const convertedData = convertFirestoreTimestamps(data);
       
       // Check if this is actually a new format post (has brief, outline, status fields)
       if (data.brief || data.outline || data.status) {
         // This is actually a new format post, treat it as such
-        return { id: doc.id, ...data } as BlogPost;
+        return { id: doc.id, ...convertedData } as BlogPost;
       }
       
       // This is an old format post, try to map it
@@ -86,10 +119,13 @@ export class HybridFirestoreService {
     
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   // Create a new automation post
@@ -119,7 +155,8 @@ export class HybridFirestoreService {
     const automationDocSnap = await getDoc(automationDocRef);
     
     if (automationDocSnap.exists()) {
-      return { id: automationDocSnap.id, ...automationDocSnap.data() } as BlogPost;
+      const data = convertFirestoreTimestamps(automationDocSnap.data());
+      return { id: automationDocSnap.id, ...data } as BlogPost;
     }
 
     // Then check existing posts
@@ -127,7 +164,7 @@ export class HybridFirestoreService {
     const existingDocSnap = await getDoc(existingDocRef);
     
     if (existingDocSnap.exists()) {
-      const data = existingDocSnap.data() as BlogPost;
+      const data = convertFirestoreTimestamps(existingDocSnap.data());
       return mapExistingPostToBlogPost({ ...data, id: existingDocSnap.id });
     }
     
@@ -178,10 +215,13 @@ export class HybridFirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   // Get publish-ready posts
@@ -194,10 +234,13 @@ export class HybridFirestoreService {
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as BlogPost));
+    return querySnapshot.docs.map(doc => {
+      const data = convertFirestoreTimestamps(doc.data());
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
   }
 
   // Get recent posts

@@ -201,7 +201,7 @@ export function PostEditWithImages() {
   };
 
   const getStatusColor = (status: PostStatus) => {
-    const colors = {
+    const colors: Record<PostStatus, string> = {
       BRIEF: "bg-gray-100 text-gray-800",
       OUTLINE: "bg-blue-100 text-blue-800",
       DRAFT: "bg-yellow-100 text-yellow-800",
@@ -209,6 +209,8 @@ export function PostEditWithImages() {
       APPROVED: "bg-green-100 text-green-800",
       SCHEDULED: "bg-purple-100 text-purple-800",
       PUBLISHED: "bg-emerald-100 text-emerald-800",
+      UNPUBLISHED: "bg-gray-100 text-gray-800",
+      REGENRATE: "bg-gray-100 text-gray-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
