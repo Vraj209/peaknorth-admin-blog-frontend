@@ -373,13 +373,15 @@ export function PostEditWithImages() {
                     </label>
                     <p className="mt-1 text-gray-900">{post.brief.goal}</p>
                   </div>
-                  {post.brief?.targetAudience && post.brief.targetAudience.length > 0 && (
+                  {post.brief?.targetAudience && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Target Audience
                       </label>
                       <p className="mt-1 text-gray-900">
-                        {post.brief.targetAudience.join(", ")}
+                        {Array.isArray(post.brief.targetAudience)
+                          ? post.brief.targetAudience.join(", ")
+                          : post.brief.targetAudience}
                       </p>
                     </div>
                   )}
