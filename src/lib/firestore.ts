@@ -175,7 +175,7 @@ export class FirestoreService {
   static async createIdea(ideaData: Omit<BlogIdea, 'id' | 'createdAt' | 'used'>): Promise<string> {
     const idea: Omit<BlogIdea, 'id'> = {
       ...ideaData,
-      used: false,
+      status: "UNUSED",
       createdAt: new Date(Date.now())
     };
     
