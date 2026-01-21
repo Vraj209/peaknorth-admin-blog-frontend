@@ -585,7 +585,7 @@ export function PostEdit() {
                           </svg>
                         )}
                         <span>
-                          {updating && statusAction === 'APPROVED' ? 'Approving...' : 'Approve'}
+                          {updating && statusAction === 'APPROVED' ? 'Approving...' : 'Approved'}
                         </span>
                       </button>
                       <button
@@ -638,7 +638,7 @@ export function PostEdit() {
                         </svg>
                       )}
                       <span>
-                        {updating && statusAction === 'APPROVED' ? 'Approving...' : 'Approve for SEO Scheduling'}
+                        {updating && statusAction === 'APPROVED' ? 'Approving...' : 'Approved for SEO Scheduling'}
                       </span>
                     </button>
                   </div>
