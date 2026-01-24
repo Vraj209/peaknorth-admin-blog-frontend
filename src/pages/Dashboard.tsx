@@ -141,14 +141,14 @@ export function Dashboard() {
       <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-2">
         {/* Next Scheduled Post */}
         {nextScheduled && (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full">
+            <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
                 <Calendar className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                 Next Scheduled Post
               </h2>
             </div>
-            <div className="p-4 lg:p-6">
+            <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
               <div className="space-y-3">
                 <h3 className="font-medium text-gray-900 text-sm lg:text-base">
                   {nextScheduled.outline?.title ||
@@ -198,8 +198,8 @@ export function Dashboard() {
         )}
 
         {/* Recent Posts */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full lg:max-h-[500px]">
+          <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h2 className="text-base lg:text-lg font-semibold text-gray-900">
                 Recent Posts
@@ -212,7 +212,7 @@ export function Dashboard() {
               </Link>
             </div>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 flex-1 overflow-y-auto">
             {recentPosts.length === 0 ? (
               <div className="px-4 lg:px-6 py-6 lg:py-8 text-center text-gray-500 text-sm">
                 No posts yet. Create your first post to get started.
