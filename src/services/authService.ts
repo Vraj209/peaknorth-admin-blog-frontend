@@ -1,10 +1,7 @@
 import type { User } from 'firebase/auth';
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signOut,
-  sendPasswordResetEmail,
-  updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -39,46 +36,25 @@ export class AuthService {
   }
 
   /**
-   * Create new user account
+   * Create new user account - DISABLED
+   * Account creation is restricted to administrators only
+   * @deprecated User registration has been disabled
    */
   static async createAccount(
-    email: string,
-    password: string,
-    displayName?: string
+    _email: string,
+    _password: string,
+    _displayName?: string
   ): Promise<User> {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Update display name if provided
-      if (displayName) {
-        await updateProfile(user, { displayName });
-      }
-
-      // Create user profile in Firestore
-      await this.createUserProfile({
-        uid: user.uid,
-        email: user.email!,
-        displayName: displayName || user.email?.split('@')[0],
-        createdAt: new Date(),
-        lastLogin: new Date(),
-      });
-
-      return user;
-    } catch (error: any) {
-      throw this.handleAuthError(error);
-    }
+    throw new Error('Account creation is disabled. Please contact an administrator.');
   }
 
   /**
-   * Send password reset email
+   * Send password reset email - DISABLED
+   * Password resets are handled through the change password page for authenticated users only
+   * @deprecated Password reset via email has been disabled
    */
-  static async sendPasswordReset(email: string): Promise<void> {
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (error: any) {
-      throw this.handleAuthError(error);
-    }
+  static async sendPasswordReset(_email: string): Promise<void> {
+    throw new Error('Password reset via email is disabled. Please use the Change Password option after logging in.');
   }
 
   /**
@@ -114,23 +90,6 @@ export class AuthService {
     } catch (error) {
       console.error('Error fetching user profile:', error);
       return null;
-    }
-  }
-
-  /**
-   * Create user profile in Firestore
-   */
-  private static async createUserProfile(profile: UserProfile): Promise<void> {
-    try {
-      const docRef = doc(db, 'users', profile.uid);
-      await setDoc(docRef, {
-        ...profile,
-        createdAt: profile.createdAt.toISOString(),
-        lastLogin: profile.lastLogin.toISOString(),
-      });
-    } catch (error) {
-      console.error('Error creating user profile:', error);
-      throw error;
     }
   }
 

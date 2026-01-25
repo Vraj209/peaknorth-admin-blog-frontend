@@ -8,8 +8,6 @@ import { PostEdit } from "./pages/PostEdit";
 import { IdeasList } from "./pages/IdeasList";
 import { Settings } from "./pages/Settings";
 import { Login } from "./pages/Login";
-import { SignUp } from "./pages/SignUp";
-import { ForgotPassword } from "./pages/ForgotPassword";
 import { ChangePassword } from "./pages/ChangePassword";
 import "./App.css";
 
@@ -20,8 +18,6 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Protected Routes */}
           <Route
