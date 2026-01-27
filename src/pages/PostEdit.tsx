@@ -188,8 +188,8 @@ export function PostEdit() {
 
   const canApprove = post && ["DRAFT", "NEEDS_REVIEW"].includes(post.status);
   const canReject = post && ["DRAFT", "NEEDS_REVIEW", "REGENRATE"].includes(post.status);
-  const canUnpublish = post && post.status === "PUBLISHED";
-  const canRepublish = post && post.status === "UNPUBLISHED";
+  const canUnpublish = post && ["PUBLISHED", "UNPUBLISHED"].includes(post.status);
+  const canRepublish = post && ["UNPUBLISHED"].includes(post.status);
 
   if (loading) {
     return (
@@ -253,7 +253,7 @@ export function PostEdit() {
             </a>
           )}
 
-          {canUnpublish && (
+          {canUnpublish && post.status === "PUBLISHED" && (
             <button
               onClick={() => updatePostStatus("UNPUBLISHED")}
               disabled={updating}
@@ -268,7 +268,7 @@ export function PostEdit() {
             </button>
           )}
 
-          {canRepublish && (
+          {canRepublish && post.status === "UNPUBLISHED" && (
             <button
               onClick={() => updatePostStatus("PUBLISHED")}
               disabled={updating}
