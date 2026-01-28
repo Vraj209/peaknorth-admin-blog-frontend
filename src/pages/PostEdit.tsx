@@ -117,9 +117,15 @@ export function PostEdit() {
       // Update status to REGENRATE first
       await updatePostStatus('REGENRATE' as PostStatus);
 
-      // Trigger N8N webhook directly
-      const n8nWebhookUrl = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL;
-      
+      // Trigger N8N webhook directly`
+      const n8nWebhookUrlTesting = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL_TESTING;
+      const n8nWebhookUrlProduction = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL_PRODUCTION;
+
+      let n8nWebhookUrl = n8nWebhookUrlTesting;
+      if (import.meta.env.NODE_ENV === 'production') {
+        n8nWebhookUrl = n8nWebhookUrlProduction;
+      }
+
       if (n8nWebhookUrl) {
         const webhookResponse = await fetch(n8nWebhookUrl, {
           method: 'POST',
