@@ -118,13 +118,7 @@ export function PostEdit() {
       await updatePostStatus('REGENRATE' as PostStatus);
 
       // Trigger N8N webhook directly`
-      const n8nWebhookUrlTesting = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL_TESTING;
-      const n8nWebhookUrlProduction = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL_PRODUCTION;
-
-      let n8nWebhookUrl = n8nWebhookUrlTesting;
-      if (import.meta.env.NODE_ENV === 'production') {
-        n8nWebhookUrl = n8nWebhookUrlProduction;
-      }
+      const n8nWebhookUrl = import.meta.env.VITE_N8N_REGENERATE_WEBHOOK_URL;
 
       if (n8nWebhookUrl) {
         const webhookResponse = await fetch(n8nWebhookUrl, {
@@ -164,6 +158,9 @@ export function PostEdit() {
       .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4">$1</h1>')
       .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mb-3">$1</h2>')
       .replace(/^### (.*$)/gim, '<h3 class="text-lg font-medium mb-2">$1</h3>')
+      .replace(/^#### (.*$)/gim, '<h4 class="text-base font-medium mb-2">$1</h4>')
+      .replace(/^##### (.*$)/gim, '<h5 class="text-sm font-medium mb-2">$1</h5>')
+      .replace(/^###### (.*$)/gim, '<h6 class="text-xs font-medium mb-2">$1</h6>')
       .replace(/\*\*(.*)\*\*/gim, '<strong class="font-semibold">$1</strong>')
       .replace(/\*(.*)\*/gim, '<em class="italic">$1</em>')
       .replace(/\n\n/gim, '</p><p class="mb-4">')
